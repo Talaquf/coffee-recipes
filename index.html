@@ -121,6 +121,10 @@ input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:lt
 .unit span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.85rem;color:var(--muted);pointer-events:none}
 details.more summary{cursor:pointer;font-size:.88rem;font-weight:500;color:var(--accent)}
 details.more[open] summary{margin-bottom:12px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{font:inherit;font-size:.85rem;font-weight:500;white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 12px;border-radius:99px;cursor:pointer;flex:none}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .check{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--fg);font-weight:500;cursor:pointer}
 .check input{width:20px;height:20px;accent-color:var(--gold);padding:0}
 .actions{display:flex;gap:10px;flex-wrap:wrap}
@@ -190,7 +194,7 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="bkMsg" aria-live="polite"></p>
   </section>
 
-  <footer class="foot"><span>v1.0.0</span><span>صُنع بواسطة <b>@talaquf</b> على تيليجرام</span></footer>
+  <footer class="foot"><span>v1.1.0</span><span>صُنع بواسطة <b>@talaquf</b> على تيليجرام</span></footer>
 
   <form class="panel" id="form" autocomplete="off" hidden>
     <h2 id="formTitle">تجربة جديدة</h2>
@@ -198,11 +202,13 @@ details.more[open] summary{margin-bottom:12px}
       <label class="full">اسم المحصول
         <input id="f-name" required placeholder="مثلاً: سيدامو بنسالي">
       </label>
-      <label>بلد المحصول
-        <input id="f-country" list="countries" placeholder="اختر أو اكتب">
+      <label class="full">بلد المحصول
+        <input id="f-country" placeholder="اختر من تحت أو اكتب">
+        <div class="chips" id="c-country" role="group" aria-label="بلد المحصول"></div>
       </label>
-      <label>المحمصة
-        <input id="f-roaster" list="roasters" placeholder="اختر أو اكتب">
+      <label class="full">المحمصة
+        <input id="f-roaster" placeholder="اختر من تحت أو اكتب">
+        <div class="chips" id="c-roaster" role="group" aria-label="المحمصة"></div>
       </label>
       <div class="flabel full">درجة الطحن
         <div class="boxed">
@@ -242,18 +248,25 @@ details.more[open] summary{margin-bottom:12px}
   </form>
 </div>
 
-<datalist id="countries">
-  <option value="برازيلي"><option value="إثيوبي"><option value="كولومبي"><option value="كيني"><option value="يمني">
-  <option value="رواندي"><option value="بوروندي"><option value="هندوراسي"><option value="غواتيمالي"><option value="بنمي">
-  <option value="كوستاريكي"><option value="بيروفي"><option value="سلفادوري"><option value="إندونيسي"><option value="مكسيكي">
-</datalist>
-<datalist id="roasters">
-  <option value="قاف"><option value="اوروس"><option value="انديز"><option value="سلالات القهوة"><option value="كفه"><option value="خطوة جمل">
-</datalist>
+
 
 <script>
 (() => {
   const $ = id => document.getElementById(id);
+  const COUNTRIES=["برازيلي","إثيوبي","كولومبي","كيني","يمني","رواندي","بوروندي","هندوراسي","غواتيمالي","بنمي","كوستاريكي","بيروفي","سلفادوري","إندونيسي","مكسيكي"];
+  const ROASTERS=["قاف","اوروس","انديز","سلالات القهوة","كفه","خطوة جمل"];
+  function chipRow(boxId,inputId,base,field){
+    const box=$(boxId), inp=$(inputId);
+    const used=[...new Set(entries.map(e=>norm(e[field])).filter(Boolean))];
+    const all=[...used.filter(x=>base.includes(x)), ...base.filter(x=>!used.includes(x)), ...used.filter(x=>!base.includes(x))];
+    const cur=norm(inp.value);
+    box.innerHTML=all.map(v=>`<button type="button" class="chip" aria-pressed="${v===cur}">${esc(v)}</button>`).join("");
+  }
+  function renderChips(){ chipRow("c-country","f-country",COUNTRIES,"country"); chipRow("c-roaster","f-roaster",ROASTERS,"roaster"); }
+  [["c-country","f-country"],["c-roaster","f-roaster"]].forEach(([b,i])=>{
+    $(b).addEventListener("click",e=>{const c=e.target.closest(".chip"); if(!c) return; const inp=$(i); inp.value = inp.value===c.textContent ? "" : c.textContent; renderChips();});
+    $(i).addEventListener("input",renderChips);
+  });
   const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"hg1":"10.2","monolith":"","name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
   const form=$("form"), guide=$("guide"), msg=$("msg"), note=$("note");
   const KEY="coffee-recipes-v1"; let entries=[], editing=null, filter="", query="", pendingDel=null, persistent=true;
@@ -265,7 +278,7 @@ details.more[open] summary{margin-bottom:12px}
     $("tab-guide").setAttribute("aria-selected", String(g));
     $("tab-new").setAttribute("aria-selected", String(!g));
     $("view-guide").hidden=!g; form.hidden=g;
-    if(!g) $("f-name").focus({preventScroll:true});
+    if(!g){ renderChips(); $("f-name").focus({preventScroll:true}); }
   }
   $("tab-guide").onclick=()=>show("guide");
   $("tab-new").onclick=()=>{ if(!editing) resetForm(); show("new"); };
@@ -367,6 +380,7 @@ details.more[open] summary{margin-bottom:12px}
     $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
     $("more").open = has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
+    renderChips();
   }
   function resetForm(){
     editing=null; form.reset(); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
@@ -428,7 +442,7 @@ details.more[open] summary{margin-bottom:12px}
 
   /* backup */
   $("exportBtn").onclick=()=>{
-    const data={app:"coffee-recipes",version:"1.0.0",exportedAt:new Date().toISOString(),entries};
+    const data={app:"coffee-recipes",version:"1.1.0",exportedAt:new Date().toISOString(),entries};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
     a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
