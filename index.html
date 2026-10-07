@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141917" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef0ee" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<title>دليل وصفات القهوة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: two views in one column — the recipe guide (one card per bean + drink, approved recipe up front, trials folded below) and the new-trial form */
+:root{
+  --bg:#eef0ee; --surface:#fbfcfb; --sunk:#e3e7e4; --line:#cdd4cf;
+  --fg:#1d2420; --muted:#5f6b64; --accent:#2f6b57; --accent-ink:#ffffff; --accent-soft:#dcebe4;
+  --warm:#8a5a2b; --warm-soft:#f1e5d6; --danger:#a23a2e; --gold:#9a7417; --gold-soft:#f4ead0;
+  --display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141917; --surface:#1c2320; --sunk:#232b27; --line:#33403a;
+  --fg:#e6ece8; --muted:#97a59d; --accent:#6fbf9f; --accent-ink:#0f1d17; --accent-soft:#1f3a30;
+  --warm:#d9a46c; --warm-soft:#3a2c1e; --danger:#e58475; --gold:#e2c06a; --gold-soft:#3a3220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141917; --surface:#1c2320; --sunk:#232b27; --line:#33403a;
+  --fg:#e6ece8; --muted:#97a59d; --accent:#6fbf9f; --accent-ink:#0f1d17; --accent-soft:#1f3a30;
+  --warm:#d9a46c; --warm-soft:#3a2c1e; --danger:#e58475; --gold:#e2c06a; --gold-soft:#3a3220; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;direction:rtl}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:grid;gap:20px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:700;font-size:1.65rem;margin:0;line-height:1.2;text-wrap:balance}
+.gear{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-family:var(--mono);direction:ltr;text-align:right;line-height:1.5}
+.gear span{white-space:nowrap}
+.stats{display:flex;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats>div{white-space:nowrap;padding-inline:14px;border-inline-start:1px solid var(--line);text-align:center}
+.stats>div:first-child{border-inline-start:0;padding-inline-start:0}
+.stats b{display:block;color:var(--fg);font-family:var(--mono);font-size:1.3rem;font-weight:500;line-height:1.2}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{font:inherit;font-family:var(--display);font-weight:500;background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
+
+.seg{display:flex;background:var(--sunk);border-radius:8px;padding:3px;gap:3px}
+.seg button{flex:1;font:inherit;font-weight:500;border:0;background:transparent;color:var(--muted);padding:8px 10px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* guide */
+.filters{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+@media (max-width:520px){.filters{grid-template-columns:1fr}}
+.filters .seg button{font-size:.85rem;padding:6px 12px}
+.search{font:inherit;font-size:.95rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;min-width:0}
+.guide{display:grid;gap:14px}
+.recipe{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.r-head{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.r-head h3{font-family:var(--display);font-weight:500;font-size:1.15rem;margin:0;line-height:1.35;overflow-wrap:anywhere}
+.meta{font-size:.85rem;color:var(--muted);margin:2px 0 0}
+.pill{font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap;background:var(--accent-soft);color:var(--accent)}
+.pill.cap{background:var(--warm-soft);color:var(--warm)}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;padding:0 18px 10px;color:var(--muted)}
+.status.ok{color:var(--gold)}
+.status i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.dial{background:var(--sunk);margin-inline:12px;border-radius:8px;padding:12px 14px;display:grid;gap:10px}
+.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.readout>div{display:grid;gap:4px;align-content:start;padding-inline:10px;border-inline-start:1px solid var(--line);min-width:0}
+.readout>div:first-child{border-inline-start:0;padding-inline-start:0}
+.readout small{font-family:var(--mono);font-size:.66rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.readout b{font-family:var(--mono);font-weight:500;font-size:clamp(.95rem,4.2vw,1.2rem);line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:break-word;word-break:normal}
+.readout b.none{color:var(--muted)}
+.readout b{direction:ltr;text-align:right;white-space:nowrap}
+.readout b em{font-style:normal;font-size:.62em;color:var(--muted);margin-left:3px;letter-spacing:.02em}
+.readout b .arr{color:var(--muted);font-size:.8em;margin-inline:3px}
+.readout.sub{border-top:1px dashed var(--line);padding-top:10px}
+.readout.sub b{font-size:clamp(.85rem,3.6vw,1rem)}
+.ratio{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--mono);font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;direction:ltr;justify-content:flex-end}
+.ratio span b{color:var(--fg);font-weight:500}
+.notes{margin:10px 18px 0;font-size:.9rem;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.r-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 18px 14px;flex-wrap:wrap}
+.date{font-family:var(--mono);font-size:.74rem;color:var(--muted);direction:ltr}
+.tools{display:flex;gap:2px;flex-wrap:wrap}
+.icon{font:inherit;font-size:.8rem;background:transparent;border:0;color:var(--muted);padding:5px 9px;border-radius:6px;cursor:pointer}
+.icon:hover{background:var(--sunk);color:var(--fg)}
+.icon.star{color:var(--gold)}
+.icon.confirm{background:var(--danger);color:#fff}
+details.trials{border-top:1px solid var(--line)}
+details.trials summary{cursor:pointer;list-style:none;padding:10px 18px;font-size:.85rem;font-weight:500;color:var(--muted);display:flex;justify-content:space-between}
+details.trials summary::-webkit-details-marker{display:none}
+details.trials summary::after{content:"＋";font-family:var(--mono)}
+details.trials[open] summary::after{content:"－"}
+.trial{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 18px;border-top:1px dashed var(--line);align-items:center}
+.trial .t-spec{font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.trial .t-note{grid-column:1/-1;font-size:.82rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
+.ex{font-size:.68rem;font-weight:600;color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:1px 6px;margin-inline-start:6px;vertical-align:middle}
+
+/* form */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:16px}
+.panel h2{font-family:var(--display);font-weight:500;font-size:1.05rem;margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+@media (max-width:460px){.grid{grid-template-columns:1fr}}
+label,.flabel{display:grid;gap:6px;font-size:.82rem;color:var(--muted);font-weight:500}
+.lbl-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--accent)}
+input,textarea{font:inherit;font-size:1rem;color:var(--fg);background:var(--sunk);border:1px solid transparent;border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+textarea{min-height:80px;resize:vertical;line-height:1.6}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.boxed{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:var(--sunk);border-radius:8px;padding:10px}
+.boxed input{background:var(--surface)}
+.unit{position:relative}
+.unit input{padding-left:44px}
+.unit span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.85rem;color:var(--muted);pointer-events:none}
+details.more summary{cursor:pointer;font-size:.88rem;font-weight:500;color:var(--accent)}
+details.more[open] summary{margin-bottom:12px}
+.check{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--fg);font-weight:500;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--gold);padding:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:10px 20px;cursor:pointer;border:1px solid transparent}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+.msg{font-size:.85rem;color:var(--muted);min-height:1.2em;margin:0}
+.msg.err{color:var(--danger)}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--fg);font-family:var(--display);font-weight:500;margin-bottom:4px}
+.note{font-size:.8rem;color:var(--danger);text-align:center;margin:0}
+.backup{border-top:1px solid var(--line);padding-top:18px;display:grid;gap:10px}
+.backup strong{font-family:var(--display);font-weight:500}
+.backup p{margin:2px 0 0;font-size:.85rem;color:var(--muted)}
+.bk-btns{display:flex;gap:10px;flex-wrap:wrap}
+.bk-btns .btn{padding:8px 16px;font-size:.9rem}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);padding-top:6px}
+.foot span:first-child{font-family:var(--mono);direction:ltr}
+.foot b{font-weight:500;color:var(--fg);direction:ltr;unicode-bidi:isolate}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>دليل وصفات القهوة</h1>
+      <p class="gear"><span>Slayer</span> · <span>Monolith</span> · <span>HG-1</span></p>
+    </div>
+    <div class="stats">
+      <div><b id="s-rec">0</b>وصفة معتمدة</div>
+      <div><b id="s-tri">0</b>تجربة</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-guide" aria-selected="true" type="button">الدليل</button>
+    <button role="tab" id="tab-new" aria-selected="false" type="button">تجربة جديدة</button>
+  </nav>
+
+  <section id="view-guide" style="display:grid;gap:14px">
+    <div class="filters">
+      <input class="search" id="q" type="search" placeholder="ابحث باسم المحصول، البلد، أو المحمصة">
+      <div class="seg" role="group" aria-label="المشروب" id="filter">
+        <button type="button" data-v="" aria-pressed="true">الكل</button>
+        <button type="button" data-v="فلات وايت" aria-pressed="false">فلات وايت</button>
+        <button type="button" data-v="كابتشينو" aria-pressed="false">كابتشينو</button>
+      </div>
+    </div>
+    <div class="guide" id="guide">
+      <div class="empty"><strong>الدليل فاضي</strong>سجّل أول تجربة من «تجربة جديدة»، واعتمد اللي تعجبك عشان تصير وصفة ترجع لها.</div>
+    </div>
+    <p class="note" id="note" hidden></p>
+  </section>
+
+  <section class="backup">
+    <div>
+      <strong>النسخة الاحتياطية</strong>
+      <p>تجاربك محفوظة في هذا المتصفح بس. صدّر نسخة بعد كل وصفة جديدة، واستوردها لو بدّلت الجهاز أو مسحت بيانات المتصفح.</p>
+    </div>
+    <div class="bk-btns">
+      <button class="btn ghost" id="exportBtn" type="button">تصدير نسخة</button>
+      <button class="btn ghost" id="importBtn" type="button">استيراد نسخة</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+    <p class="msg" id="bkMsg" aria-live="polite"></p>
+  </section>
+
+  <footer class="foot"><span>v1.0.0</span><span>صُنع بواسطة <b>@talaquf</b> على تيليجرام</span></footer>
+
+  <form class="panel" id="form" autocomplete="off" hidden>
+    <h2 id="formTitle">تجربة جديدة</h2>
+    <div class="grid">
+      <label class="full">اسم المحصول
+        <input id="f-name" required placeholder="مثلاً: سيدامو بنسالي">
+      </label>
+      <label>بلد المحصول
+        <input id="f-country" list="countries" placeholder="اختر أو اكتب">
+      </label>
+      <label>المحمصة
+        <input id="f-roaster" list="roasters" placeholder="اختر أو اكتب">
+      </label>
+      <div class="flabel full">درجة الطحن
+        <div class="boxed">
+          <label><span class="lbl-tag">MONOLITH</span><input id="f-mono" class="num" inputmode="decimal" placeholder="—"></label>
+          <label><span class="lbl-tag">HG-1</span><input id="f-hg1" class="num" inputmode="decimal" placeholder="—"></label>
+        </div>
+      </div>
+      <label>درجة الحرارة
+        <div class="unit"><input id="f-temp" class="num" type="number" step="0.5" min="80" max="100" value="93"><span>°C</span></div>
+      </label>
+      <div class="flabel">المشروب
+        <div class="seg" role="group" aria-label="المشروب" id="f-drink">
+          <button type="button" data-v="فلات وايت" aria-pressed="true">فلات وايت</button>
+          <button type="button" data-v="كابتشينو" aria-pressed="false">كابتشينو</button>
+        </div>
+      </div>
+      <details class="more full" id="more">
+        <summary>تفاصيل إضافية (اختياري)</summary>
+        <div style="display:grid;gap:14px">
+          <div class="boxed">
+            <label>الجرعة<div class="unit"><input id="f-dose" class="num" type="number" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
+            <label>الناتج<div class="unit"><input id="f-yield" class="num" type="number" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
+            <label>الوقت<div class="unit"><input id="f-time" class="num" type="number" step="1" min="0" placeholder="28"><span>s</span></div></label>
+          </div>
+          <label>ملاحظات التذوق
+            <textarea id="f-notes" placeholder="مثلاً: حلاوة واضحة، حموضة خفيفة، الحليب غطّى على النكهة شوي…"></textarea>
+          </label>
+        </div>
+      </details>
+      <label class="check full"><input type="checkbox" id="f-fav"> اعتمدها كوصفة لهذا المحصول</label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="save" type="submit">حفظ التجربة</button>
+      <button class="btn ghost" id="cancel" type="button">إلغاء</button>
+    </div>
+    <p class="msg" id="msg" aria-live="polite"></p>
+  </form>
+</div>
+
+<datalist id="countries">
+  <option value="برازيلي"><option value="إثيوبي"><option value="كولومبي"><option value="كيني"><option value="يمني">
+  <option value="رواندي"><option value="بوروندي"><option value="هندوراسي"><option value="غواتيمالي"><option value="بنمي">
+  <option value="كوستاريكي"><option value="بيروفي"><option value="سلفادوري"><option value="إندونيسي"><option value="مكسيكي">
+</datalist>
+<datalist id="roasters">
+  <option value="قاف"><option value="اوروس"><option value="انديز"><option value="سلالات القهوة"><option value="كفه"><option value="خطوة جمل">
+</datalist>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"hg1":"10.2","monolith":"","name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
+  const form=$("form"), guide=$("guide"), msg=$("msg"), note=$("note");
+  const KEY="coffee-recipes-v1"; let entries=[], editing=null, filter="", query="", pendingDel=null, persistent=true;
+  const openGroups=new Set();
+
+  /* tabs */
+  function show(tab){
+    const g = tab==="guide";
+    $("tab-guide").setAttribute("aria-selected", String(g));
+    $("tab-new").setAttribute("aria-selected", String(!g));
+    $("view-guide").hidden=!g; form.hidden=g;
+    if(!g) $("f-name").focus({preventScroll:true});
+  }
+  $("tab-guide").onclick=()=>show("guide");
+  $("tab-new").onclick=()=>{ if(!editing) resetForm(); show("new"); };
+
+  const setSeg=(el,v)=>el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
+  const segVal=el=>el.querySelector('[aria-pressed="true"]').dataset.v;
+  $("f-drink").onclick=e=>{const b=e.target.closest("button"); if(b) setSeg($("f-drink"),b.dataset.v);};
+  $("filter").onclick=e=>{const b=e.target.closest("button"); if(!b) return; filter=b.dataset.v; setSeg($("filter"),filter); render();};
+  $("q").oninput=e=>{query=e.target.value.trim(); render();};
+
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const norm=s=>String(s??"").trim().replace(/\s+/g," ");
+  const keyOf=e=>[norm(e.name),norm(e.roaster),e.drink||""].join("|");
+  const fmtDate=t=>{ if(!t) return ""; const d=new Date(t); return d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); };
+  const v=x=>{
+    if(x===""||x==null) return '<b class="none">—</b>';
+    const m=String(x).trim().match(/^([\d.,٠-٩]+)\s*(.*)$/);
+    return m ? `<b>${esc(m[1])}${m[2]?`<em>${esc(m[2])}</em>`:""}</b>` : `<b>${esc(x)}</b>`;
+  };
+  const has=x=>!(x===""||x==null);
+
+  function ratioLine(e){
+    if(!has(e.dose)&&!has(e.yield)&&!has(e.time)) return "";
+    const r=(has(e.dose)&&has(e.yield)&&Number(e.dose)>0)?"1:"+(Number(e.yield)/Number(e.dose)).toFixed(1):"";
+    const dy=(has(e.dose)||has(e.yield))?`<b>${has(e.dose)?esc(e.dose):"—"}<span class="arr">→</span>${has(e.yield)?esc(e.yield):"—"}<em>g</em></b>`:'<b class="none">—</b>';
+    return `<div class="readout sub">
+      <div><small>In → Out</small>${dy}</div>
+      <div><small>Ratio</small>${r?`<b>${r}</b>`:'<b class="none">—</b>'}</div>
+      <div><small>Time</small>${has(e.time)?`<b>${esc(e.time)}<em>s</em></b>`:'<b class="none">—</b>'}</div>
+    </div>`;
+  }
+  function tools(e,isMain){
+    return `<div class="tools">
+      ${e.fav?"":`<button class="icon star" data-act="fav" data-id="${esc(e.id)}" type="button">اعتمد</button>`}
+      <button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?"تجربة عليها":"تكرار"}</button>
+      <button class="icon" data-act="edit" data-id="${esc(e.id)}" type="button">تعديل</button>
+      <button class="icon ${pendingDel===e.id?"confirm":""}" data-act="del" data-id="${esc(e.id)}" type="button">${pendingDel===e.id?"تأكيد الحذف":"حذف"}</button>
+    </div>`;
+  }
+
+  function render(){
+    const groups=new Map();
+    entries.forEach(e=>{const k=keyOf(e); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(e);});
+    let list=[...groups.entries()].map(([k,items])=>{
+      items.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      const main=items.find(x=>x.fav)||items[0];
+      return {k,items,main,approved:!!items.find(x=>x.fav)};
+    });
+    $("s-rec").textContent=list.filter(g=>g.approved).length;
+    $("s-tri").textContent=entries.length;
+
+    if(filter) list=list.filter(g=>g.main.drink===filter);
+    if(query){ const q=query.toLowerCase(); list=list.filter(g=>[g.main.name,g.main.country,g.main.roaster].some(x=>String(x||"").toLowerCase().includes(q))); }
+    list.sort((a,b)=>(b.approved-a.approved)||((b.items[0].createdAt||0)-(a.items[0].createdAt||0)));
+
+    if(!list.length){
+      guide.innerHTML = entries.length
+        ? `<div class="empty"><strong>ما فيه نتائج</strong>جرّب كلمة بحث ثانية أو غيّر التصفية.</div>`
+        : `<div class="empty"><strong>الدليل فاضي</strong>سجّل أول تجربة من «تجربة جديدة»، واعتمد اللي تعجبك عشان تصير وصفة ترجع لها.</div>`;
+      return;
+    }
+    guide.innerHTML=list.map(g=>{
+      const m=g.main, others=g.items.filter(x=>x!==m);
+      return `<article class="recipe">
+        <div class="r-head">
+          <div style="min-width:0">
+            <h3>${esc(m.name||"بدون اسم")}${m.example?'<span class="ex">مثال</span>':""}</h3>
+            <p class="meta">${[m.country,m.roaster].filter(Boolean).map(esc).join(" · ")||"—"}</p>
+          </div>
+          <span class="pill ${m.drink==="كابتشينو"?"cap":""}">${esc(m.drink||"")}</span>
+        </div>
+        <div class="status ${g.approved?"ok":""}"><i></i>${g.approved?"الوصفة المعتمدة":"آخر تجربة — ما اعتمدت وصفة بعد"}</div>
+        <div class="dial">
+          <div class="readout">
+            <div><small>Monolith</small>${v(m.monolith)}</div>
+            <div><small>HG-1</small>${v(m.hg1)}</div>
+            <div><small>Temp °C</small>${v(m.temp)}</div>
+          </div>
+          ${ratioLine(m)}
+        </div>
+        ${has(m.notes)?`<p class="notes">${esc(m.notes)}</p>`:""}
+        <div class="r-foot"><span class="date">${fmtDate(m.createdAt)}</span>${tools(m,true)}</div>
+        ${others.length?`<details class="trials" data-k="${esc(g.k)}" ${openGroups.has(g.k)?"open":""}>
+          <summary>التجارب السابقة (${others.length})</summary>
+          ${others.map(t=>`<div class="trial">
+            <div class="t-spec">M ${has(t.monolith)?esc(t.monolith):"—"} · HG ${has(t.hg1)?esc(t.hg1):"—"} · ${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
+            ${tools(t,false)}
+            ${has(t.notes)?`<p class="t-note">${esc(t.notes)}</p>`:""}
+          </div>`).join("")}
+        </details>`:""}
+      </article>`;
+    }).join("");
+    guide.querySelectorAll("details.trials").forEach(d=>d.addEventListener("toggle",()=>{d.open?openGroups.add(d.dataset.k):openGroups.delete(d.dataset.k);}));
+  }
+
+  function fill(e){
+    $("f-name").value=e.name||""; $("f-country").value=e.country||""; $("f-roaster").value=e.roaster||"";
+    $("f-mono").value=e.monolith??""; $("f-hg1").value=e.hg1??""; $("f-temp").value=e.temp??93;
+    $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
+    $("more").open = has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
+    setSeg($("f-drink"),e.drink||"فلات وايت");
+  }
+  function resetForm(){
+    editing=null; form.reset(); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
+    $("formTitle").textContent="تجربة جديدة"; $("save").textContent="حفظ التجربة"; msg.textContent="";
+  }
+  $("cancel").onclick=()=>{resetForm(); show("guide");};
+
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); }catch(e){ persistent=false; banner(); } }
+  function load(){ try{ const raw=localStorage.getItem(KEY); return raw===null?null:JSON.parse(raw); }catch(e){ persistent=false; return null; } }
+  function banner(){ if(!persistent){ note.hidden=false; note.textContent="المتصفح مانع الحفظ هنا (وضع متخفي أو بيانات المواقع مقفلة) — صدّر نسخة احتياطية قبل ما تقفل الصفحة."; } }
+  async function write(id, body){ const i=entries.findIndex(x=>x.id===id); if(i>-1) entries[i]={id,...body}; else entries.unshift({id,...body}); entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render(); }
+  const strip=e=>{const {id,...rest}=e; return rest;};
+
+  async function makeFav(id){
+    const e=entries.find(x=>x.id===id); if(!e) return;
+    const k=keyOf(e);
+    for(const o of entries.filter(x=>keyOf(x)===k && x.fav && x.id!==id)) await write(o.id,{...strip(o),fav:false});
+    await write(id,{...strip(e),fav:true});
+  }
+
+  guide.addEventListener("click", async ev=>{
+    const b=ev.target.closest("button[data-act]"); if(!b) return;
+    const id=b.dataset.id, e=entries.find(x=>x.id===id); if(!e) return;
+    try{
+      if(b.dataset.act==="fav") await makeFav(id);
+      if(b.dataset.act==="edit"){ resetForm(); editing=id; fill(e); $("f-fav").checked=!!e.fav; $("formTitle").textContent="تعديل التجربة"; $("save").textContent="حفظ التعديل"; show("new"); }
+      if(b.dataset.act==="dup"){ resetForm(); fill(e); $("f-notes").value=""; msg.className="msg"; msg.textContent="نسخت إعدادات هذي الوصفة — غيّر اللي تبي تجربه واحفظ."; show("new"); }
+      if(b.dataset.act==="del"){
+        if(pendingDel!==id){ pendingDel=id; render(); setTimeout(()=>{ if(pendingDel===id){pendingDel=null; render();} },4000); return; }
+        pendingDel=null;
+        entries=entries.filter(x=>x.id!==id); save(); render();
+      }
+    }catch(err){ note.hidden=false; note.textContent="ما قدرت أحفظ التغيير. جرّب مرة ثانية."; }
+  });
+
+  form.addEventListener("submit", async ev=>{
+    ev.preventDefault();
+    const name=norm($("f-name").value);
+    if(!name){ msg.className="msg err"; msg.textContent="اكتب اسم المحصول أول."; $("f-name").focus(); return; }
+    const num=x=>x===""?"":Number(x);
+    const old=editing?entries.find(x=>x.id===editing):null;
+    const body={ name, country:norm($("f-country").value), roaster:norm($("f-roaster").value),
+      monolith:$("f-mono").value.trim(), hg1:$("f-hg1").value.trim(), temp:num($("f-temp").value),
+      drink:segVal($("f-drink")), dose:num($("f-dose").value), yield:num($("f-yield").value), time:num($("f-time").value),
+      notes:$("f-notes").value.trim(), fav:false, createdAt: old?.createdAt||Date.now() };
+    if(old) body.updatedAt=Date.now();
+    const wantFav=$("f-fav").checked;
+    $("save").disabled=true;
+    try{
+      const id = editing || ("r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+      await write(id, body);
+      if(wantFav) await makeFav(id);
+      resetForm(); show("guide");
+    }catch(err){
+      msg.className="msg err";
+      msg.textContent = "ما قدرت أحفظ. جرّب مرة ثانية.";
+    }finally{ $("save").disabled=false; }
+  });
+
+  /* backup */
+  $("exportBtn").onclick=()=>{
+    const data={app:"coffee-recipes",version:"1.0.0",exportedAt:new Date().toISOString(),entries};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    $("bkMsg").textContent="تم تنزيل النسخة الاحتياطية.";
+  };
+  $("importBtn").onclick=()=>$("importFile").click();
+  $("importFile").onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{
+      const d=JSON.parse(await f.text()); const list=Array.isArray(d)?d:d.entries;
+      if(!Array.isArray(list)) throw 0;
+      let n=0; list.forEach(x=>{ if(x&&x.id&&x.name){ const i=entries.findIndex(y=>y.id===x.id); if(i>-1) entries[i]=x; else entries.push(x); n++; } });
+      entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render();
+      $("bkMsg").textContent="تم استيراد "+n+" تجربة.";
+    }catch(err){ $("bkMsg").textContent="الملف مو نسخة احتياطية صالحة من الدليل."; }
+    e.target.value="";
+  };
+
+  const saved=load();
+  entries = saved ?? SEED;
+  if(saved===null && persistent) save();
+  banner(); render();
+})();
+</script>
+</body>
+</html>
