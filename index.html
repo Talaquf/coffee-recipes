@@ -150,6 +150,12 @@ details.more[open] summary{margin-bottom:12px}
 .foot a{font-weight:500;color:var(--fg);text-decoration:none;direction:ltr;unicode-bidi:isolate}
 .foot a:hover{text-decoration:underline}
 .top{display:flex;justify-content:flex-end}
+.update{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+.up-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.update .ver{font-size:.82rem;color:var(--muted)}
+.up-btn{padding:7px 14px;font-size:.88rem}
+.up-btn.new{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.up-btn:disabled{opacity:.6;cursor:progress}
 .lang{font:inherit;font-size:.8rem;font-weight:500;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:99px;padding:4px 12px;cursor:pointer}
 .lang:hover{color:var(--fg);border-color:var(--muted)}
 .lang:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -252,12 +258,20 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="bkMsg" aria-live="polite"></p>
   </section>
 
-  <footer class="foot"><span class="ver" id="ver"></span><span class="credit" id="credit"></span></footer>
+  <section class="update" id="updateBar">
+    <div class="up-row">
+      <span class="ver" id="ver"></span>
+      <button class="btn ghost up-btn" id="updBtn" type="button"></button>
+    </div>
+    <p class="msg" id="updMsg" aria-live="polite"></p>
+  </section>
+
+  <footer class="foot"><span class="credit" id="credit"></span></footer>
 </div>
 
 <script>
 (() => {
-  const VERSION="1.2.1";
+  const VERSION="1.3.0";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -288,7 +302,8 @@ details.more[open] summary{margin-bottom:12px}
       exported:"نُزّلت النسخة الاحتياطية.", imported:"تم استيراد التجارب: {n}",
       badFile:"هذا الملف ليس نسخة احتياطية صالحة من الدليل.",
       storageOff:"يمنع المتصفح الحفظ هنا (التصفح الخفي أو حظر بيانات المواقع). صدّر نسخة احتياطية قبل إغلاق الصفحة.",
-      credit:"من إعداد {h} على تيليجرام", langBtn:"English"
+      credit:"من إعداد {h} على تيليجرام", langBtn:"English",
+      ver:"الإصدار {n}", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
     },
     en:{
       title:"Coffee Recipe Guide", statRec:"approved", statTri:"trials",
@@ -316,7 +331,8 @@ details.more[open] summary{margin-bottom:12px}
       exported:"Backup downloaded.", imported:"Imported {n} trials.",
       badFile:"This file isn't a valid backup from the guide.",
       storageOff:"This browser is blocking storage here (private mode or blocked site data). Export a backup before you close the page.",
-      credit:"Made by {h} on Telegram", langBtn:"العربية"
+      credit:"Made by {h} on Telegram", langBtn:"العربية",
+      ver:"Version {n}", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
     }
   };
   /* stored values stay Arabic; these give their English labels */
@@ -354,7 +370,8 @@ details.more[open] summary{margin-bottom:12px}
     document.querySelectorAll("[data-i18n-ph]").forEach(el=>el.placeholder=T(el.dataset.i18nPh));
     document.querySelectorAll("[data-i18n-aria]").forEach(el=>el.setAttribute("aria-label",T(el.dataset.i18nAria)));
     const lb=$("langBtn"); lb.textContent=T("langBtn"); lb.lang= lang==="ar"?"en":"ar";
-    $("ver").textContent="v"+VERSION;
+    $("ver").textContent=T("ver","v"+VERSION);
+    paintUpd();
     const [pre,post]=T("credit").split("{h}");
     $("credit").innerHTML=esc(pre)+'<a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a>'+esc(post);
     $("formTitle").textContent= editing?T("formEdit"):T("formNew");
@@ -580,12 +597,44 @@ details.more[open] summary{margin-bottom:12px}
     e.target.value="";
   };
 
+  /* ---------- updates ---------- */
+  let latest=null, updState="idle"; /* idle | checking | latest | new | fail */
+  const newer=(a,b)=>{ const x=a.split(".").map(Number), y=b.split(".").map(Number); for(let i=0;i<3;i++){ if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0); } return false; };
+  function paintUpd(){
+    const b=$("updBtn"), m=$("updMsg");
+    b.disabled= updState==="checking";
+    b.classList.toggle("new", updState==="new");
+    b.textContent= updState==="checking"?T("upChecking"): updState==="new"?T("upGo","v"+latest):T("upCheck");
+    m.className= "msg"+(updState==="fail"?" err":"");
+    m.textContent= updState==="latest"?T("upLatest"): updState==="new"?T("upNew"): updState==="fail"?T("upFail"): updState==="done"?T("upDone","v"+VERSION):"";
+  }
+  async function checkUpdate(silent){
+    if(!silent){ updState="checking"; paintUpd(); }
+    try{
+      const res=await fetch(location.pathname+"?check="+Date.now(),{cache:"no-store"});
+      if(!res.ok) throw 0;
+      const m=(await res.text()).match(/const VERSION="([\d.]+)"/);
+      if(!m) throw 0;
+      latest=m[1];
+      if(newer(latest,VERSION)) updState="new";
+      else if(!silent) updState="latest";
+    }catch(e){ if(!silent) updState="fail"; }
+    paintUpd();
+  }
+  $("updBtn").onclick=()=>{
+    if(updState==="new"){ location.replace(location.pathname+"?v="+latest+"&t="+Date.now()); return; }
+    checkUpdate(false);
+  };
+  /* after an update, tidy the address bar and confirm */
+  (()=>{ const q=new URLSearchParams(location.search); if(q.has("v")){ if(q.get("v")===VERSION) updState="done"; try{ history.replaceState(null,"",location.pathname); }catch(e){} } })();
+
   /* ---------- start ---------- */
   const saved=load();
   entries= saved ?? SEED;
   if(saved===null && persistent) save();
   resetForm();
   applyLang();
+  if(location.protocol.startsWith("http")) checkUpdate(true);
 })();
 </script>
 </body>
