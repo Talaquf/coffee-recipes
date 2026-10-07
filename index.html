@@ -61,7 +61,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .filters{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 @media (max-width:520px){.filters{grid-template-columns:1fr}}
 .filters .seg button{font-size:.85rem;padding:6px 12px}
-.search{font:inherit;font-size:.95rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;min-width:0}
+.search{font:inherit;font-size:.92rem;text-overflow:ellipsis;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;min-width:0}
 .guide{display:grid;gap:14px}
 .recipe{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .r-head{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
@@ -76,7 +76,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .readout>div{display:grid;gap:4px;align-content:start;padding-inline:10px;border-inline-start:1px solid var(--line);min-width:0}
 .readout>div:first-child{border-inline-start:0;padding-inline-start:0}
-.readout small{font-family:var(--mono);font-size:.66rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.readout small{font-family:var(--mono);font-size:.64rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;direction:ltr;unicode-bidi:isolate;text-align:var(--align)}
 .readout b{font-family:var(--mono);font-weight:500;font-size:clamp(.95rem,4.2vw,1.2rem);line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:break-word;word-break:normal}
 .readout b.none{color:var(--muted)}
 .readout b{direction:ltr;text-align:var(--align);white-space:nowrap}
@@ -146,7 +146,7 @@ details.more[open] summary{margin-bottom:12px}
 .bk-btns{display:flex;gap:10px;flex-wrap:wrap}
 .bk-btns .btn{padding:8px 16px;font-size:.9rem}
 .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);padding-top:6px}
-.foot span:first-child{font-family:var(--mono);direction:ltr}
+.foot .ver{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
 .foot a{font-weight:500;color:var(--fg);text-decoration:none;direction:ltr;unicode-bidi:isolate}
 .foot a:hover{text-decoration:underline}
 .top{display:flex;justify-content:flex-end}
@@ -252,12 +252,12 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="bkMsg" aria-live="polite"></p>
   </section>
 
-  <footer class="foot"><span id="ver"></span><span><span data-i18n="credit"></span> <a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a></span></footer>
+  <footer class="foot"><span class="ver" id="ver"></span><span class="credit" id="credit"></span></footer>
 </div>
 
 <script>
 (() => {
-  const VERSION="1.2.0";
+  const VERSION="1.2.1";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -265,7 +265,7 @@ details.more[open] summary{margin-bottom:12px}
     ar:{
       title:"دليل وصفات القهوة", statRec:"وصفة معتمدة", statTri:"تجربة",
       tabGuide:"الدليل", tabNew:"تجربة جديدة",
-      search:"ابحث باسم المحصول أو البلد أو المحمصة", all:"الكل", drink:"المشروب",
+      search:"ابحث بالمحصول أو البلد أو المحمصة", all:"الكل", drink:"المشروب",
       flatWhite:"فلات وايت", cappuccino:"كابتشينو",
       emptyT:"لا توجد وصفات بعد", emptyB:"سجّل تجربتك الأولى من «تجربة جديدة»، ثم اعتمد ما يعجبك منها لتصبح وصفةً تعود إليها.",
       noResT:"لا توجد نتائج", noResB:"جرّب كلمة بحث أخرى أو غيّر التصفية.",
@@ -288,12 +288,12 @@ details.more[open] summary{margin-bottom:12px}
       exported:"نُزّلت النسخة الاحتياطية.", imported:"تم استيراد التجارب: {n}",
       badFile:"هذا الملف ليس نسخة احتياطية صالحة من الدليل.",
       storageOff:"يمنع المتصفح الحفظ هنا (التصفح الخفي أو حظر بيانات المواقع). صدّر نسخة احتياطية قبل إغلاق الصفحة.",
-      credit:"من إعداد", langBtn:"English"
+      credit:"من إعداد {h} على تيليجرام", langBtn:"English"
     },
     en:{
       title:"Coffee Recipe Guide", statRec:"approved", statTri:"trials",
       tabGuide:"Guide", tabNew:"New trial",
-      search:"Search by bean, origin, or roaster", all:"All", drink:"Drink",
+      search:"Search bean, origin, or roaster", all:"All", drink:"Drink",
       flatWhite:"Flat White", cappuccino:"Cappuccino",
       emptyT:"No recipes yet", emptyB:"Log your first trial under “New trial”, then approve the one you like so it becomes a recipe you can come back to.",
       noResT:"No results", noResB:"Try another search term or change the filter.",
@@ -316,7 +316,7 @@ details.more[open] summary{margin-bottom:12px}
       exported:"Backup downloaded.", imported:"Imported {n} trials.",
       badFile:"This file isn't a valid backup from the guide.",
       storageOff:"This browser is blocking storage here (private mode or blocked site data). Export a backup before you close the page.",
-      credit:"Made by", langBtn:"العربية"
+      credit:"Made by {h} on Telegram", langBtn:"العربية"
     }
   };
   /* stored values stay Arabic; these give their English labels */
@@ -355,6 +355,8 @@ details.more[open] summary{margin-bottom:12px}
     document.querySelectorAll("[data-i18n-aria]").forEach(el=>el.setAttribute("aria-label",T(el.dataset.i18nAria)));
     const lb=$("langBtn"); lb.textContent=T("langBtn"); lb.lang= lang==="ar"?"en":"ar";
     $("ver").textContent="v"+VERSION;
+    const [pre,post]=T("credit").split("{h}");
+    $("credit").innerHTML=esc(pre)+'<a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a>'+esc(post);
     $("formTitle").textContent= editing?T("formEdit"):T("formNew");
     $("save").textContent= editing?T("saveEdit"):T("save");
     banner(); render(); renderChips();
