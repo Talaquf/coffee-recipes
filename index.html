@@ -35,11 +35,13 @@
 html,body{margin:0}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;direction:rtl}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6}
+html[dir="rtl"]{--align:right}
+html[dir="ltr"]{--align:left}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:grid;gap:20px}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 h1{font-family:var(--display);font-weight:700;font-size:1.65rem;margin:0;line-height:1.2;text-wrap:balance}
-.gear{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-family:var(--mono);direction:ltr;text-align:right;line-height:1.5}
+.gear{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-family:var(--mono);direction:ltr;text-align:var(--align);line-height:1.5}
 .gear span{white-space:nowrap}
 .stats{display:flex;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .stats>div{white-space:nowrap;padding-inline:14px;border-inline-start:1px solid var(--line);text-align:center}
@@ -77,13 +79,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .readout small{font-family:var(--mono);font-size:.66rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .readout b{font-family:var(--mono);font-weight:500;font-size:clamp(.95rem,4.2vw,1.2rem);line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:break-word;word-break:normal}
 .readout b.none{color:var(--muted)}
-.readout b{direction:ltr;text-align:right;white-space:nowrap}
+.readout b{direction:ltr;text-align:var(--align);white-space:nowrap}
 .readout b em{font-style:normal;font-size:.62em;color:var(--muted);margin-left:3px;letter-spacing:.02em}
 .readout b .arr{color:var(--muted);font-size:.8em;margin-inline:3px}
 .readout.sub{border-top:1px dashed var(--line);padding-top:10px}
 .readout.sub b{font-size:clamp(.85rem,3.6vw,1rem)}
-.ratio{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--mono);font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;direction:ltr;justify-content:flex-end}
-.ratio span b{color:var(--fg);font-weight:500}
 .notes{margin:10px 18px 0;font-size:.9rem;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
 .r-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 18px 14px;flex-wrap:wrap}
 .date{font-family:var(--mono);font-size:.74rem;color:var(--muted);direction:ltr}
@@ -98,7 +98,7 @@ details.trials summary::-webkit-details-marker{display:none}
 details.trials summary::after{content:"＋";font-family:var(--mono)}
 details.trials[open] summary::after{content:"－"}
 .trial{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 18px;border-top:1px dashed var(--line);align-items:center}
-.trial .t-spec{font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.trial .t-spec{font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums;direction:ltr;text-align:var(--align);overflow-wrap:anywhere}
 .trial .t-note{grid-column:1/-1;font-size:.82rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
 .ex{font-size:.68rem;font-weight:600;color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:1px 6px;margin-inline-start:6px;vertical-align:middle}
 
@@ -113,12 +113,15 @@ label,.flabel{display:grid;gap:6px;font-size:.82rem;color:var(--muted);font-weig
 input,textarea{font:inherit;font-size:1rem;color:var(--fg);background:var(--sunk);border:1px solid transparent;border-radius:8px;padding:10px 12px;width:100%;min-width:0}
 textarea{min-height:80px;resize:vertical;line-height:1.6}
 input:focus,textarea:focus{outline:none;border-color:var(--accent);background:var(--surface)}
-input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:var(--align)}
 .boxed{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:var(--sunk);border-radius:8px;padding:10px}
 .boxed input{background:var(--surface)}
 .unit{position:relative}
-.unit input{padding-left:44px}
-.unit span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.85rem;color:var(--muted);pointer-events:none}
+html[dir="rtl"] .unit input{padding-left:44px}
+html[dir="ltr"] .unit input{padding-right:44px}
+html[dir="rtl"] .unit span{left:12px}
+html[dir="ltr"] .unit span{right:12px}
+.unit span{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.85rem;color:var(--muted);pointer-events:none}
 details.more summary{cursor:pointer;font-size:.88rem;font-weight:500;color:var(--accent)}
 details.more[open] summary{margin-bottom:12px}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-block:2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -144,140 +147,252 @@ details.more[open] summary{margin-bottom:12px}
 .bk-btns .btn{padding:8px 16px;font-size:.9rem}
 .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);padding-top:6px}
 .foot span:first-child{font-family:var(--mono);direction:ltr}
-.foot b{font-weight:500;color:var(--fg);direction:ltr;unicode-bidi:isolate}
+.foot a{font-weight:500;color:var(--fg);text-decoration:none;direction:ltr;unicode-bidi:isolate}
+.foot a:hover{text-decoration:underline}
+.top{display:flex;justify-content:flex-end}
+.lang{font:inherit;font-size:.8rem;font-weight:500;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:99px;padding:4px 12px;cursor:pointer}
+.lang:hover{color:var(--fg);border-color:var(--muted)}
+.lang:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
 
 <div class="wrap">
+  <div class="top"><button class="lang" id="langBtn" type="button" lang="en">English</button></div>
   <header>
     <div>
-      <h1>دليل وصفات القهوة</h1>
+      <h1 data-i18n="title"></h1>
       <p class="gear"><span>Slayer</span> · <span>Monolith</span> · <span>HG-1</span></p>
     </div>
     <div class="stats">
-      <div><b id="s-rec">0</b>وصفة معتمدة</div>
-      <div><b id="s-tri">0</b>تجربة</div>
+      <div><b id="s-rec">0</b><span data-i18n="statRec"></span></div>
+      <div><b id="s-tri">0</b><span data-i18n="statTri"></span></div>
     </div>
   </header>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" id="tab-guide" aria-selected="true" type="button">الدليل</button>
-    <button role="tab" id="tab-new" aria-selected="false" type="button">تجربة جديدة</button>
+    <button role="tab" id="tab-guide" aria-selected="true" type="button" data-i18n="tabGuide"></button>
+    <button role="tab" id="tab-new" aria-selected="false" type="button" data-i18n="tabNew"></button>
   </nav>
 
   <section id="view-guide" style="display:grid;gap:14px">
     <div class="filters">
-      <input class="search" id="q" type="search" placeholder="ابحث باسم المحصول، البلد، أو المحمصة">
-      <div class="seg" role="group" aria-label="المشروب" id="filter">
-        <button type="button" data-v="" aria-pressed="true">الكل</button>
-        <button type="button" data-v="فلات وايت" aria-pressed="false">فلات وايت</button>
-        <button type="button" data-v="كابتشينو" aria-pressed="false">كابتشينو</button>
+      <input class="search" id="q" type="search" data-i18n-ph="search">
+      <div class="seg" role="group" id="filter" data-i18n-aria="drink">
+        <button type="button" data-v="" aria-pressed="true" data-i18n="all"></button>
+        <button type="button" data-v="فلات وايت" aria-pressed="false" data-i18n="flatWhite"></button>
+        <button type="button" data-v="كابتشينو" aria-pressed="false" data-i18n="cappuccino"></button>
       </div>
     </div>
-    <div class="guide" id="guide">
-      <div class="empty"><strong>الدليل فاضي</strong>سجّل أول تجربة من «تجربة جديدة»، واعتمد اللي تعجبك عشان تصير وصفة ترجع لها.</div>
-    </div>
+    <div class="guide" id="guide"></div>
     <p class="note" id="note" hidden></p>
   </section>
 
-  <section class="backup">
-    <div>
-      <strong>النسخة الاحتياطية</strong>
-      <p>تجاربك محفوظة في هذا المتصفح بس. صدّر نسخة بعد كل وصفة جديدة، واستوردها لو بدّلت الجهاز أو مسحت بيانات المتصفح.</p>
-    </div>
-    <div class="bk-btns">
-      <button class="btn ghost" id="exportBtn" type="button">تصدير نسخة</button>
-      <button class="btn ghost" id="importBtn" type="button">استيراد نسخة</button>
-      <input type="file" id="importFile" accept="application/json,.json" hidden>
-    </div>
-    <p class="msg" id="bkMsg" aria-live="polite"></p>
-  </section>
-
-  <footer class="foot"><span>v1.1.0</span><span>صُنع بواسطة <b>@talaquf</b> على تيليجرام</span></footer>
-
   <form class="panel" id="form" autocomplete="off" hidden>
-    <h2 id="formTitle">تجربة جديدة</h2>
+    <h2 id="formTitle"></h2>
     <div class="grid">
-      <label class="full">اسم المحصول
-        <input id="f-name" required placeholder="مثلاً: سيدامو بنسالي">
+      <label class="full"><span data-i18n="fName"></span>
+        <input id="f-name" required data-i18n-ph="phName">
       </label>
-      <label class="full">بلد المحصول
-        <input id="f-country" placeholder="اختر من تحت أو اكتب">
-        <div class="chips" id="c-country" role="group" aria-label="بلد المحصول"></div>
+      <label class="full"><span data-i18n="fCountry"></span>
+        <input id="f-country" data-i18n-ph="phPick">
+        <div class="chips" id="c-country" role="group" data-i18n-aria="fCountry"></div>
       </label>
-      <label class="full">المحمصة
-        <input id="f-roaster" placeholder="اختر من تحت أو اكتب">
-        <div class="chips" id="c-roaster" role="group" aria-label="المحمصة"></div>
+      <label class="full"><span data-i18n="fRoaster"></span>
+        <input id="f-roaster" data-i18n-ph="phPick">
+        <div class="chips" id="c-roaster" role="group" data-i18n-aria="fRoaster"></div>
       </label>
-      <div class="flabel full">درجة الطحن
+      <div class="flabel full"><span data-i18n="fGrind"></span>
         <div class="boxed">
           <label><span class="lbl-tag">MONOLITH</span><input id="f-mono" class="num" inputmode="decimal" placeholder="—"></label>
           <label><span class="lbl-tag">HG-1</span><input id="f-hg1" class="num" inputmode="decimal" placeholder="—"></label>
         </div>
       </div>
-      <label>درجة الحرارة
+      <label><span data-i18n="fTemp"></span>
         <div class="unit"><input id="f-temp" class="num" type="number" step="0.5" min="80" max="100" value="93"><span>°C</span></div>
       </label>
-      <div class="flabel">المشروب
-        <div class="seg" role="group" aria-label="المشروب" id="f-drink">
-          <button type="button" data-v="فلات وايت" aria-pressed="true">فلات وايت</button>
-          <button type="button" data-v="كابتشينو" aria-pressed="false">كابتشينو</button>
+      <div class="flabel"><span data-i18n="drink"></span>
+        <div class="seg" role="group" id="f-drink" data-i18n-aria="drink">
+          <button type="button" data-v="فلات وايت" aria-pressed="true" data-i18n="flatWhite"></button>
+          <button type="button" data-v="كابتشينو" aria-pressed="false" data-i18n="cappuccino"></button>
         </div>
       </div>
       <details class="more full" id="more">
-        <summary>تفاصيل إضافية (اختياري)</summary>
+        <summary data-i18n="more"></summary>
         <div style="display:grid;gap:14px">
           <div class="boxed">
-            <label>الجرعة<div class="unit"><input id="f-dose" class="num" type="number" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
-            <label>الناتج<div class="unit"><input id="f-yield" class="num" type="number" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
-            <label>الوقت<div class="unit"><input id="f-time" class="num" type="number" step="1" min="0" placeholder="28"><span>s</span></div></label>
+            <label><span data-i18n="fDose"></span><div class="unit"><input id="f-dose" class="num" type="number" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
+            <label><span data-i18n="fYield"></span><div class="unit"><input id="f-yield" class="num" type="number" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
+            <label><span data-i18n="fTime"></span><div class="unit"><input id="f-time" class="num" type="number" step="1" min="0" placeholder="28"><span>s</span></div></label>
           </div>
-          <label>ملاحظات التذوق
-            <textarea id="f-notes" placeholder="مثلاً: حلاوة واضحة، حموضة خفيفة، الحليب غطّى على النكهة شوي…"></textarea>
+          <label><span data-i18n="fNotes"></span>
+            <textarea id="f-notes" data-i18n-ph="phNotes"></textarea>
           </label>
         </div>
       </details>
-      <label class="check full"><input type="checkbox" id="f-fav"> اعتمدها كوصفة لهذا المحصول</label>
+      <label class="check full"><input type="checkbox" id="f-fav"> <span data-i18n="fFav"></span></label>
     </div>
     <div class="actions">
-      <button class="btn primary" id="save" type="submit">حفظ التجربة</button>
-      <button class="btn ghost" id="cancel" type="button">إلغاء</button>
+      <button class="btn primary" id="save" type="submit"></button>
+      <button class="btn ghost" id="cancel" type="button" data-i18n="cancel"></button>
     </div>
     <p class="msg" id="msg" aria-live="polite"></p>
   </form>
+
+  <section class="backup" id="backup">
+    <div>
+      <strong data-i18n="bkTitle"></strong>
+      <p data-i18n="bkBody"></p>
+    </div>
+    <div class="bk-btns">
+      <button class="btn ghost" id="exportBtn" type="button" data-i18n="export"></button>
+      <button class="btn ghost" id="importBtn" type="button" data-i18n="import"></button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+    <p class="msg" id="bkMsg" aria-live="polite"></p>
+  </section>
+
+  <footer class="foot"><span id="ver"></span><span><span data-i18n="credit"></span> <a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a></span></footer>
 </div>
-
-
 
 <script>
 (() => {
+  const VERSION="1.2.0";
   const $ = id => document.getElementById(id);
-  const COUNTRIES=["برازيلي","إثيوبي","كولومبي","كيني","يمني","رواندي","بوروندي","هندوراسي","غواتيمالي","بنمي","كوستاريكي","بيروفي","سلفادوري","إندونيسي","مكسيكي"];
-  const ROASTERS=["قاف","اوروس","انديز","سلالات القهوة","كفه","خطوة جمل"];
+
+  /* ---------- language ---------- */
+  const STR={
+    ar:{
+      title:"دليل وصفات القهوة", statRec:"وصفة معتمدة", statTri:"تجربة",
+      tabGuide:"الدليل", tabNew:"تجربة جديدة",
+      search:"ابحث باسم المحصول أو البلد أو المحمصة", all:"الكل", drink:"المشروب",
+      flatWhite:"فلات وايت", cappuccino:"كابتشينو",
+      emptyT:"لا توجد وصفات بعد", emptyB:"سجّل تجربتك الأولى من «تجربة جديدة»، ثم اعتمد ما يعجبك منها لتصبح وصفةً تعود إليها.",
+      noResT:"لا توجد نتائج", noResB:"جرّب كلمة بحث أخرى أو غيّر التصفية.",
+      approved:"الوصفة المعتمدة", latest:"آخر تجربة، ولم تُعتمد وصفة بعد",
+      prev:"التجارب السابقة ({n})", example:"مثال", unnamed:"بلا اسم",
+      aFav:"اعتماد", aTry:"تجربة عليها", aDup:"تكرار", aEdit:"تعديل", aDel:"حذف", aConfirm:"تأكيد الحذف",
+      formNew:"تجربة جديدة", formEdit:"تعديل التجربة",
+      fName:"اسم المحصول", phName:"مثال: سيدامو بنسالي",
+      fCountry:"بلد المنشأ", fRoaster:"المحمصة", phPick:"اختر مما يلي أو اكتب",
+      fGrind:"درجة الطحن", fTemp:"درجة الحرارة",
+      more:"تفاصيل إضافية (اختيارية)", fDose:"الجرعة", fYield:"الناتج", fTime:"الوقت",
+      fNotes:"ملاحظات التذوق", phNotes:"مثال: حلاوة واضحة، وحموضة خفيفة، وطغى الحليب على النكهة قليلًا…",
+      fFav:"اعتمادها وصفةً لهذا المحصول",
+      save:"حفظ التجربة", saveEdit:"حفظ التعديل", cancel:"إلغاء",
+      errName:"يُرجى كتابة اسم المحصول أولًا.", errSave:"تعذّر الحفظ. حاول مرة أخرى.",
+      dupMsg:"نُسخت إعدادات هذه الوصفة إلى النموذج. غيّر ما تريد تجربته ثم احفظ.",
+      bkTitle:"النسخة الاحتياطية",
+      bkBody:"تُحفظ تجاربك في هذا المتصفح فقط. صدّر نسخةً بعد كل وصفة جديدة، واستوردها عند تغيير الجهاز أو مسح بيانات المتصفح.",
+      export:"تصدير نسخة", import:"استيراد نسخة",
+      exported:"نُزّلت النسخة الاحتياطية.", imported:"تم استيراد التجارب: {n}",
+      badFile:"هذا الملف ليس نسخة احتياطية صالحة من الدليل.",
+      storageOff:"يمنع المتصفح الحفظ هنا (التصفح الخفي أو حظر بيانات المواقع). صدّر نسخة احتياطية قبل إغلاق الصفحة.",
+      credit:"من إعداد", langBtn:"English"
+    },
+    en:{
+      title:"Coffee Recipe Guide", statRec:"approved", statTri:"trials",
+      tabGuide:"Guide", tabNew:"New trial",
+      search:"Search by bean, origin, or roaster", all:"All", drink:"Drink",
+      flatWhite:"Flat White", cappuccino:"Cappuccino",
+      emptyT:"No recipes yet", emptyB:"Log your first trial under “New trial”, then approve the one you like so it becomes a recipe you can come back to.",
+      noResT:"No results", noResB:"Try another search term or change the filter.",
+      approved:"Approved recipe", latest:"Latest trial, no recipe approved yet",
+      prev:"Earlier trials ({n})", example:"Example", unnamed:"Untitled",
+      aFav:"Approve", aTry:"Try a variation", aDup:"Duplicate", aEdit:"Edit", aDel:"Delete", aConfirm:"Confirm delete",
+      formNew:"New trial", formEdit:"Edit trial",
+      fName:"Bean name", phName:"e.g. Sidamo Bensa",
+      fCountry:"Origin", fRoaster:"Roaster", phPick:"Pick below or type",
+      fGrind:"Grind setting", fTemp:"Temperature",
+      more:"More details (optional)", fDose:"Dose", fYield:"Yield", fTime:"Time",
+      fNotes:"Tasting notes", phNotes:"e.g. clear sweetness, light acidity, milk muted the flavor a little…",
+      fFav:"Approve as the recipe for this bean",
+      save:"Save trial", saveEdit:"Save changes", cancel:"Cancel",
+      errName:"Enter the bean name first.", errSave:"Couldn't save. Try again.",
+      dupMsg:"Copied this recipe's settings into the form. Change what you want to test, then save.",
+      bkTitle:"Backup",
+      bkBody:"Your trials are saved in this browser only. Export a copy after each new recipe, and import it when you switch devices or clear browser data.",
+      export:"Export backup", import:"Import backup",
+      exported:"Backup downloaded.", imported:"Imported {n} trials.",
+      badFile:"This file isn't a valid backup from the guide.",
+      storageOff:"This browser is blocking storage here (private mode or blocked site data). Export a backup before you close the page.",
+      credit:"Made by", langBtn:"العربية"
+    }
+  };
+  /* stored values stay Arabic; these give their English labels */
+  const LABELS={
+    country:{"برازيلي":"Brazil","إثيوبي":"Ethiopia","كولومبي":"Colombia","كيني":"Kenya","يمني":"Yemen","رواندي":"Rwanda","بوروندي":"Burundi","هندوراسي":"Honduras","غواتيمالي":"Guatemala","بنمي":"Panama","كوستاريكي":"Costa Rica","بيروفي":"Peru","سلفادوري":"El Salvador","إندونيسي":"Indonesia","مكسيكي":"Mexico"},
+    roaster:{"قاف":"Qaf","اوروس":"Orous","انديز":"Andes","سلالات القهوة":"Sulalat Coffee","كفه":"Kaffa","خطوة جمل":"Camel Step"},
+    drink:{"فلات وايت":"Flat White","كابتشينو":"Cappuccino"}
+  };
+  const LANG_KEY="coffee-recipes-lang";
+  let lang="ar";
+  try{ const l=localStorage.getItem(LANG_KEY); if(l==="en"||l==="ar") lang=l; }catch(e){}
+  const T=(k,n)=>{ const s=(STR[lang][k]??STR.ar[k]??k); return n==null?s:s.replace("{n}",n); };
+  const disp=(field,val)=> lang==="en" ? (LABELS[field][val]||val) : val;
+  const canon=(field,val)=>{
+    const v=norm(val); if(lang!=="en") return v;
+    const hit=Object.entries(LABELS[field]).find(([,en])=>en.toLowerCase()===v.toLowerCase());
+    return hit?hit[0]:v;
+  };
+
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const norm=s=>String(s??"").trim().replace(/\s+/g," ");
+  const has=x=>!(x===""||x==null);
+
+  const form=$("form"), guide=$("guide"), msg=$("msg"), note=$("note");
+  const KEY="coffee-recipes-v1";
+  const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"hg1":"10.2","monolith":"","name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
+  let entries=[], editing=null, filter="", query="", pendingDel=null, persistent=true, view="guide";
+  const openGroups=new Set();
+
+  function applyLang(){
+    const root=document.documentElement;
+    root.lang=lang; root.dir= lang==="ar"?"rtl":"ltr";
+    document.title=T("title");
+    document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=T(el.dataset.i18n));
+    document.querySelectorAll("[data-i18n-ph]").forEach(el=>el.placeholder=T(el.dataset.i18nPh));
+    document.querySelectorAll("[data-i18n-aria]").forEach(el=>el.setAttribute("aria-label",T(el.dataset.i18nAria)));
+    const lb=$("langBtn"); lb.textContent=T("langBtn"); lb.lang= lang==="ar"?"en":"ar";
+    $("ver").textContent="v"+VERSION;
+    $("formTitle").textContent= editing?T("formEdit"):T("formNew");
+    $("save").textContent= editing?T("saveEdit"):T("save");
+    banner(); render(); renderChips();
+  }
+  $("langBtn").onclick=()=>{
+    const c=canon("country",$("f-country").value), r=canon("roaster",$("f-roaster").value);
+    lang= lang==="ar"?"en":"ar";
+    try{ localStorage.setItem(LANG_KEY,lang); }catch(e){}
+    $("f-country").value=c?disp("country",c):""; $("f-roaster").value=r?disp("roaster",r):"";
+    msg.textContent=""; $("bkMsg").textContent="";
+    applyLang();
+  };
+
+  /* ---------- chips ---------- */
+  const COUNTRIES=Object.keys(LABELS.country), ROASTERS=Object.keys(LABELS.roaster);
   function chipRow(boxId,inputId,base,field){
     const box=$(boxId), inp=$(inputId);
     const used=[...new Set(entries.map(e=>norm(e[field])).filter(Boolean))];
     const all=[...used.filter(x=>base.includes(x)), ...base.filter(x=>!used.includes(x)), ...used.filter(x=>!base.includes(x))];
-    const cur=norm(inp.value);
-    box.innerHTML=all.map(v=>`<button type="button" class="chip" aria-pressed="${v===cur}">${esc(v)}</button>`).join("");
+    const cur=canon(field,inp.value);
+    box.innerHTML=all.map(v=>`<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="${v===cur}">${esc(disp(field,v))}</button>`).join("");
   }
   function renderChips(){ chipRow("c-country","f-country",COUNTRIES,"country"); chipRow("c-roaster","f-roaster",ROASTERS,"roaster"); }
-  [["c-country","f-country"],["c-roaster","f-roaster"]].forEach(([b,i])=>{
-    $(b).addEventListener("click",e=>{const c=e.target.closest(".chip"); if(!c) return; const inp=$(i); inp.value = inp.value===c.textContent ? "" : c.textContent; renderChips();});
+  [["c-country","f-country","country"],["c-roaster","f-roaster","roaster"]].forEach(([b,i,field])=>{
+    $(b).addEventListener("click",e=>{
+      const c=e.target.closest(".chip"); if(!c) return;
+      const inp=$(i); inp.value = canon(field,inp.value)===c.dataset.v ? "" : disp(field,c.dataset.v);
+      renderChips();
+    });
     $(i).addEventListener("input",renderChips);
   });
-  const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"hg1":"10.2","monolith":"","name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
-  const form=$("form"), guide=$("guide"), msg=$("msg"), note=$("note");
-  const KEY="coffee-recipes-v1"; let entries=[], editing=null, filter="", query="", pendingDel=null, persistent=true;
-  const openGroups=new Set();
 
-  /* tabs */
+  /* ---------- views ---------- */
   function show(tab){
-    const g = tab==="guide";
-    $("tab-guide").setAttribute("aria-selected", String(g));
-    $("tab-new").setAttribute("aria-selected", String(!g));
-    $("view-guide").hidden=!g; form.hidden=g;
+    view=tab; const g= tab==="guide";
+    $("tab-guide").setAttribute("aria-selected",String(g));
+    $("tab-new").setAttribute("aria-selected",String(!g));
+    $("view-guide").hidden=!g; $("backup").hidden=!g; form.hidden=g;
     if(!g){ renderChips(); $("f-name").focus({preventScroll:true}); }
   }
   $("tab-guide").onclick=()=>show("guide");
@@ -289,17 +404,14 @@ details.more[open] summary{margin-bottom:12px}
   $("filter").onclick=e=>{const b=e.target.closest("button"); if(!b) return; filter=b.dataset.v; setSeg($("filter"),filter); render();};
   $("q").oninput=e=>{query=e.target.value.trim(); render();};
 
-  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const norm=s=>String(s??"").trim().replace(/\s+/g," ");
+  /* ---------- render ---------- */
   const keyOf=e=>[norm(e.name),norm(e.roaster),e.drink||""].join("|");
-  const fmtDate=t=>{ if(!t) return ""; const d=new Date(t); return d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); };
-  const v=x=>{
-    if(x===""||x==null) return '<b class="none">—</b>';
+  const fmtDate=t=>{ if(!t) return ""; return new Date(t).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); };
+  const val=x=>{
+    if(!has(x)) return '<b class="none">—</b>';
     const m=String(x).trim().match(/^([\d.,٠-٩]+)\s*(.*)$/);
     return m ? `<b>${esc(m[1])}${m[2]?`<em>${esc(m[2])}</em>`:""}</b>` : `<b>${esc(x)}</b>`;
   };
-  const has=x=>!(x===""||x==null);
-
   function ratioLine(e){
     if(!has(e.dose)&&!has(e.yield)&&!has(e.time)) return "";
     const r=(has(e.dose)&&has(e.yield)&&Number(e.dose)>0)?"1:"+(Number(e.yield)/Number(e.dose)).toFixed(1):"";
@@ -311,14 +423,14 @@ details.more[open] summary{margin-bottom:12px}
     </div>`;
   }
   function tools(e,isMain){
+    const del=pendingDel===e.id;
     return `<div class="tools">
-      ${e.fav?"":`<button class="icon star" data-act="fav" data-id="${esc(e.id)}" type="button">اعتمد</button>`}
-      <button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?"تجربة عليها":"تكرار"}</button>
-      <button class="icon" data-act="edit" data-id="${esc(e.id)}" type="button">تعديل</button>
-      <button class="icon ${pendingDel===e.id?"confirm":""}" data-act="del" data-id="${esc(e.id)}" type="button">${pendingDel===e.id?"تأكيد الحذف":"حذف"}</button>
+      ${e.fav?"":`<button class="icon star" data-act="fav" data-id="${esc(e.id)}" type="button">${T("aFav")}</button>`}
+      <button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?T("aTry"):T("aDup")}</button>
+      <button class="icon" data-act="edit" data-id="${esc(e.id)}" type="button">${T("aEdit")}</button>
+      <button class="icon ${del?"confirm":""}" data-act="del" data-id="${esc(e.id)}" type="button">${del?T("aConfirm"):T("aDel")}</button>
     </div>`;
   }
-
   function render(){
     const groups=new Map();
     entries.forEach(e=>{const k=keyOf(e); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(e);});
@@ -331,38 +443,42 @@ details.more[open] summary{margin-bottom:12px}
     $("s-tri").textContent=entries.length;
 
     if(filter) list=list.filter(g=>g.main.drink===filter);
-    if(query){ const q=query.toLowerCase(); list=list.filter(g=>[g.main.name,g.main.country,g.main.roaster].some(x=>String(x||"").toLowerCase().includes(q))); }
+    if(query){
+      const q=query.toLowerCase();
+      list=list.filter(g=>{const m=g.main; return [m.name,m.country,m.roaster,disp("country",m.country),disp("roaster",m.roaster)].some(x=>String(x||"").toLowerCase().includes(q));});
+    }
     list.sort((a,b)=>(b.approved-a.approved)||((b.items[0].createdAt||0)-(a.items[0].createdAt||0)));
 
     if(!list.length){
       guide.innerHTML = entries.length
-        ? `<div class="empty"><strong>ما فيه نتائج</strong>جرّب كلمة بحث ثانية أو غيّر التصفية.</div>`
-        : `<div class="empty"><strong>الدليل فاضي</strong>سجّل أول تجربة من «تجربة جديدة»، واعتمد اللي تعجبك عشان تصير وصفة ترجع لها.</div>`;
+        ? `<div class="empty"><strong>${T("noResT")}</strong>${T("noResB")}</div>`
+        : `<div class="empty"><strong>${T("emptyT")}</strong>${esc(T("emptyB"))}</div>`;
       return;
     }
     guide.innerHTML=list.map(g=>{
       const m=g.main, others=g.items.filter(x=>x!==m);
+      const meta=[m.country&&disp("country",m.country), m.roaster&&disp("roaster",m.roaster)].filter(Boolean).map(esc).join(" · ")||"—";
       return `<article class="recipe">
         <div class="r-head">
           <div style="min-width:0">
-            <h3>${esc(m.name||"بدون اسم")}${m.example?'<span class="ex">مثال</span>':""}</h3>
-            <p class="meta">${[m.country,m.roaster].filter(Boolean).map(esc).join(" · ")||"—"}</p>
+            <h3>${esc(m.name||T("unnamed"))}${m.example?`<span class="ex">${T("example")}</span>`:""}</h3>
+            <p class="meta">${meta}</p>
           </div>
-          <span class="pill ${m.drink==="كابتشينو"?"cap":""}">${esc(m.drink||"")}</span>
+          <span class="pill ${m.drink==="كابتشينو"?"cap":""}">${esc(disp("drink",m.drink||""))}</span>
         </div>
-        <div class="status ${g.approved?"ok":""}"><i></i>${g.approved?"الوصفة المعتمدة":"آخر تجربة — ما اعتمدت وصفة بعد"}</div>
+        <div class="status ${g.approved?"ok":""}"><i></i>${g.approved?T("approved"):T("latest")}</div>
         <div class="dial">
           <div class="readout">
-            <div><small>Monolith</small>${v(m.monolith)}</div>
-            <div><small>HG-1</small>${v(m.hg1)}</div>
-            <div><small>Temp °C</small>${v(m.temp)}</div>
+            <div><small>Monolith</small>${val(m.monolith)}</div>
+            <div><small>HG-1</small>${val(m.hg1)}</div>
+            <div><small>Temp °C</small>${val(m.temp)}</div>
           </div>
           ${ratioLine(m)}
         </div>
         ${has(m.notes)?`<p class="notes">${esc(m.notes)}</p>`:""}
         <div class="r-foot"><span class="date">${fmtDate(m.createdAt)}</span>${tools(m,true)}</div>
         ${others.length?`<details class="trials" data-k="${esc(g.k)}" ${openGroups.has(g.k)?"open":""}>
-          <summary>التجارب السابقة (${others.length})</summary>
+          <summary>${T("prev",others.length)}</summary>
           ${others.map(t=>`<div class="trial">
             <div class="t-spec">M ${has(t.monolith)?esc(t.monolith):"—"} · HG ${has(t.hg1)?esc(t.hg1):"—"} · ${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
             ${tools(t,false)}
@@ -374,80 +490,80 @@ details.more[open] summary{margin-bottom:12px}
     guide.querySelectorAll("details.trials").forEach(d=>d.addEventListener("toggle",()=>{d.open?openGroups.add(d.dataset.k):openGroups.delete(d.dataset.k);}));
   }
 
+  /* ---------- form ---------- */
   function fill(e){
-    $("f-name").value=e.name||""; $("f-country").value=e.country||""; $("f-roaster").value=e.roaster||"";
+    $("f-name").value=e.name||"";
+    $("f-country").value=e.country?disp("country",e.country):"";
+    $("f-roaster").value=e.roaster?disp("roaster",e.roaster):"";
     $("f-mono").value=e.monolith??""; $("f-hg1").value=e.hg1??""; $("f-temp").value=e.temp??93;
     $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
-    $("more").open = has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
+    $("more").open= has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
     renderChips();
   }
   function resetForm(){
     editing=null; form.reset(); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
-    $("formTitle").textContent="تجربة جديدة"; $("save").textContent="حفظ التجربة"; msg.textContent="";
+    $("formTitle").textContent=T("formNew"); $("save").textContent=T("save"); msg.textContent="";
   }
   $("cancel").onclick=()=>{resetForm(); show("guide");};
 
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); }catch(e){ persistent=false; banner(); } }
+  /* ---------- storage ---------- */
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(entries)); }catch(e){ persistent=false; banner(); } }
   function load(){ try{ const raw=localStorage.getItem(KEY); return raw===null?null:JSON.parse(raw); }catch(e){ persistent=false; return null; } }
-  function banner(){ if(!persistent){ note.hidden=false; note.textContent="المتصفح مانع الحفظ هنا (وضع متخفي أو بيانات المواقع مقفلة) — صدّر نسخة احتياطية قبل ما تقفل الصفحة."; } }
-  async function write(id, body){ const i=entries.findIndex(x=>x.id===id); if(i>-1) entries[i]={id,...body}; else entries.unshift({id,...body}); entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render(); }
+  function banner(){ if(!persistent){ note.hidden=false; note.textContent=T("storageOff"); } }
+  function write(id,body){
+    const i=entries.findIndex(x=>x.id===id);
+    if(i>-1) entries[i]={id,...body}; else entries.unshift({id,...body});
+    entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render();
+  }
   const strip=e=>{const {id,...rest}=e; return rest;};
-
-  async function makeFav(id){
+  function makeFav(id){
     const e=entries.find(x=>x.id===id); if(!e) return;
     const k=keyOf(e);
-    for(const o of entries.filter(x=>keyOf(x)===k && x.fav && x.id!==id)) await write(o.id,{...strip(o),fav:false});
-    await write(id,{...strip(e),fav:true});
+    entries.filter(x=>keyOf(x)===k && x.fav && x.id!==id).forEach(o=>write(o.id,{...strip(o),fav:false}));
+    write(id,{...strip(e),fav:true});
   }
 
-  guide.addEventListener("click", async ev=>{
+  guide.addEventListener("click",ev=>{
     const b=ev.target.closest("button[data-act]"); if(!b) return;
     const id=b.dataset.id, e=entries.find(x=>x.id===id); if(!e) return;
-    try{
-      if(b.dataset.act==="fav") await makeFav(id);
-      if(b.dataset.act==="edit"){ resetForm(); editing=id; fill(e); $("f-fav").checked=!!e.fav; $("formTitle").textContent="تعديل التجربة"; $("save").textContent="حفظ التعديل"; show("new"); }
-      if(b.dataset.act==="dup"){ resetForm(); fill(e); $("f-notes").value=""; msg.className="msg"; msg.textContent="نسخت إعدادات هذي الوصفة — غيّر اللي تبي تجربه واحفظ."; show("new"); }
-      if(b.dataset.act==="del"){
-        if(pendingDel!==id){ pendingDel=id; render(); setTimeout(()=>{ if(pendingDel===id){pendingDel=null; render();} },4000); return; }
-        pendingDel=null;
-        entries=entries.filter(x=>x.id!==id); save(); render();
-      }
-    }catch(err){ note.hidden=false; note.textContent="ما قدرت أحفظ التغيير. جرّب مرة ثانية."; }
+    const act=b.dataset.act;
+    if(act==="fav") makeFav(id);
+    if(act==="edit"){ resetForm(); editing=id; fill(e); $("f-fav").checked=!!e.fav; $("formTitle").textContent=T("formEdit"); $("save").textContent=T("saveEdit"); show("new"); }
+    if(act==="dup"){ resetForm(); fill(e); $("f-notes").value=""; msg.className="msg"; msg.textContent=T("dupMsg"); show("new"); }
+    if(act==="del"){
+      if(pendingDel!==id){ pendingDel=id; render(); setTimeout(()=>{ if(pendingDel===id){pendingDel=null; render();} },4000); return; }
+      pendingDel=null; entries=entries.filter(x=>x.id!==id); save(); render();
+    }
   });
 
-  form.addEventListener("submit", async ev=>{
+  form.addEventListener("submit",ev=>{
     ev.preventDefault();
     const name=norm($("f-name").value);
-    if(!name){ msg.className="msg err"; msg.textContent="اكتب اسم المحصول أول."; $("f-name").focus(); return; }
+    if(!name){ msg.className="msg err"; msg.textContent=T("errName"); $("f-name").focus(); return; }
     const num=x=>x===""?"":Number(x);
     const old=editing?entries.find(x=>x.id===editing):null;
-    const body={ name, country:norm($("f-country").value), roaster:norm($("f-roaster").value),
+    const body={ name, country:canon("country",$("f-country").value), roaster:canon("roaster",$("f-roaster").value),
       monolith:$("f-mono").value.trim(), hg1:$("f-hg1").value.trim(), temp:num($("f-temp").value),
       drink:segVal($("f-drink")), dose:num($("f-dose").value), yield:num($("f-yield").value), time:num($("f-time").value),
       notes:$("f-notes").value.trim(), fav:false, createdAt: old?.createdAt||Date.now() };
     if(old) body.updatedAt=Date.now();
-    const wantFav=$("f-fav").checked;
-    $("save").disabled=true;
     try{
-      const id = editing || ("r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
-      await write(id, body);
-      if(wantFav) await makeFav(id);
+      const id= editing || ("r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+      write(id,body);
+      if($("f-fav").checked) makeFav(id);
       resetForm(); show("guide");
-    }catch(err){
-      msg.className="msg err";
-      msg.textContent = "ما قدرت أحفظ. جرّب مرة ثانية.";
-    }finally{ $("save").disabled=false; }
+    }catch(err){ msg.className="msg err"; msg.textContent=T("errSave"); }
   });
 
-  /* backup */
+  /* ---------- backup ---------- */
   $("exportBtn").onclick=()=>{
-    const data={app:"coffee-recipes",version:"1.1.0",exportedAt:new Date().toISOString(),entries};
+    const data={app:"coffee-recipes",version:VERSION,exportedAt:new Date().toISOString(),entries};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
     a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    $("bkMsg").textContent="تم تنزيل النسخة الاحتياطية.";
+    $("bkMsg").textContent=T("exported");
   };
   $("importBtn").onclick=()=>$("importFile").click();
   $("importFile").onchange=async e=>{
@@ -456,16 +572,18 @@ details.more[open] summary{margin-bottom:12px}
       const d=JSON.parse(await f.text()); const list=Array.isArray(d)?d:d.entries;
       if(!Array.isArray(list)) throw 0;
       let n=0; list.forEach(x=>{ if(x&&x.id&&x.name){ const i=entries.findIndex(y=>y.id===x.id); if(i>-1) entries[i]=x; else entries.push(x); n++; } });
-      entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render();
-      $("bkMsg").textContent="تم استيراد "+n+" تجربة.";
-    }catch(err){ $("bkMsg").textContent="الملف مو نسخة احتياطية صالحة من الدليل."; }
+      entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render(); renderChips();
+      $("bkMsg").textContent=T("imported",n);
+    }catch(err){ $("bkMsg").textContent=T("badFile"); }
     e.target.value="";
   };
 
+  /* ---------- start ---------- */
   const saved=load();
-  entries = saved ?? SEED;
+  entries= saved ?? SEED;
   if(saved===null && persistent) save();
-  banner(); render();
+  resetForm();
+  applyLang();
 })();
 </script>
 </body>
