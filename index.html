@@ -129,6 +129,14 @@ input:focus,textarea:focus{outline:none;border-color:var(--accent);background:va
 input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:var(--align)}
 .boxed{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:var(--sunk);border-radius:8px;padding:10px}
 .boxed input{background:var(--surface)}
+.g-field{display:grid;gap:6px;min-width:0}
+.g-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.pref{font:inherit;font-size:.75rem;font-weight:500;display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.pref::before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;box-sizing:border-box}
+.pref[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
+.pref[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent)}
+.pref:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-inline-end:6px;vertical-align:middle;position:relative;top:-1px}
 .unit{position:relative}
 html[dir="rtl"] .unit input{padding-left:44px}
 html[dir="ltr"] .unit input{padding-right:44px}
@@ -355,7 +363,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.6.3";
+  const VERSION="1.7.0";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -391,7 +399,7 @@ details.more[open] summary{margin-bottom:12px}
       setTitle:"الإعدادات", done:"تم", sLook:"المظهر", sTheme:"الوضع", tDark:"ليلي", tLight:"نهاري", sFont:"حجم الخط", fS:"صغير", fM:"افتراضي", fL:"كبير", fXL:"أكبر", sEquip:"المعدات", sMachine:"مكينة الإسبريسو", phMachine:"مثال: Slayer Single Group",
       sGrinders:"المطاحن", addGrinder:"إضافة مطحنة", phGrinder:"اسم المطحنة", gRemove:"إزالة", gConfirm:"تأكيد الإزالة",
       sHint:"تُحفظ التغييرات تلقائيًا. إزالة مطحنة تخفيها من النموذج فقط، وتبقى قيمها ظاهرة في الوصفات القديمة.",
-      noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة",
+      noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة", prefBtn:"المفضلة", prefLabel:"المطحنة المفضلة لهذه الوصفة", prefShare:"(المفضلة)",
       instT:"ثبّت الدليل على جهازك", instB:"يفتح من أيقونته مباشرةً بملء الشاشة، ويعمل دون اتصال بالإنترنت.",
       instBtn:"تثبيت التطبيق", instManual:"من قائمة المتصفح ⋮ اختر «إضافة إلى الشاشة الرئيسية» أو «تثبيت التطبيق».", instIOS:"في سفاري: اضغط زر المشاركة ⬆︎ ثم اختر «إضافة إلى الشاشة الرئيسية».", instHide:"إخفاء",
       aShare:"مشاركة", copied:"نُسخت الوصفة.", shareFail:"تعذّرت المشاركة.",
@@ -429,7 +437,7 @@ details.more[open] summary{margin-bottom:12px}
       setTitle:"Settings", done:"Done", sLook:"Appearance", sTheme:"Theme", tDark:"Dark", tLight:"Light", sFont:"Text size", fS:"Small", fM:"Default", fL:"Large", fXL:"Larger", sEquip:"Equipment", sMachine:"Espresso machine", phMachine:"e.g. Slayer Single Group",
       sGrinders:"Grinders", addGrinder:"Add grinder", phGrinder:"Grinder name", gRemove:"Remove", gConfirm:"Confirm",
       sHint:"Changes save automatically. Removing a grinder only hides it from the form; its settings stay visible on older recipes.",
-      noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder",
+      noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder", prefBtn:"Preferred", prefLabel:"Preferred grinder for this recipe", prefShare:"(preferred)",
       instT:"Install the guide on your device", instB:"It opens straight from its icon, full screen, and works offline.",
       instBtn:"Install app", instManual:"Open the browser menu ⋮ and choose “Add to Home screen” or “Install app”.", instIOS:"In Safari, tap the Share button ⬆︎, then choose “Add to Home Screen”.", instHide:"Hide",
       aShare:"Share", copied:"Recipe copied.", shareFail:"Couldn't share.",
@@ -535,12 +543,25 @@ details.more[open] summary{margin-bottom:12px}
   function readGrindInputs(){
     const o={}; $("grindBox").querySelectorAll("input[data-g]").forEach(i=>{ if(i.value.trim()) o[i.dataset.g]=i.value.trim(); }); return o;
   }
+  let prefG="";
   function renderGrindInputs(values){
     const gs=activeGrinders();
     $("grindBox").innerHTML = gs.length
-      ? gs.map(g=>`<label><span class="lbl-tag">${esc((g.name||T("grinder")).toUpperCase())}</span><input class="num" inputmode="decimal" placeholder="—" data-g="${esc(g.id)}" value="${esc(values[g.id]??"")}"></label>`).join("")
+      ? gs.map(g=>{ const nm=g.name||T("grinder"), on=prefG===g.id, fid="gi-"+g.id;
+          return `<div class="g-field">
+            <div class="g-head">
+              <label class="lbl-tag" for="${esc(fid)}">${esc(nm.toUpperCase())}</label>
+              <button type="button" class="pref" data-pref="${esc(g.id)}" aria-pressed="${on}" aria-label="${esc(T("prefLabel")+": "+nm)}">${T("prefBtn")}</button>
+            </div>
+            <input id="${esc(fid)}" class="num" inputmode="decimal" placeholder="—" data-g="${esc(g.id)}" value="${esc(values[g.id]??"")}">
+          </div>`; }).join("")
       : `<p class="hint">${T("noGrinders")}</p>`;
   }
+  $("grindBox").addEventListener("click",e=>{
+    const b=e.target.closest("button[data-pref]"); if(!b) return;
+    prefG = prefG===b.dataset.pref ? "" : b.dataset.pref;
+    $("grindBox").querySelectorAll("button[data-pref]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.pref===prefG)));
+  });
   let pendingRemove=null;
   function renderSettings(){
     $("s-machine").value=settings.machine||"";
@@ -625,7 +646,7 @@ details.more[open] summary{margin-bottom:12px}
     const ids=grindIds(e), g=e.grind||{};
     const cols=Math.min(ids.length+1,4);
     return `<div class="readout" style="--cols:${cols}">
-      ${ids.map(id=>`<div><small>${esc(gName(id))}</small>${val(g[id])}</div>`).join("")}
+      ${ids.map(id=>`<div><small>${e.prefGrinder===id?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))}</small>${val(g[id])}</div>`).join("")}
       <div><small>Temp °C</small>${val(e.temp)}</div>
     </div>`;
   }
@@ -694,7 +715,7 @@ details.more[open] summary{margin-bottom:12px}
         ${others.length?`<details class="trials" data-k="${esc(g.k)}" ${openGroups.has(g.k)?"open":""}>
           <summary>${T("prev",others.length)}</summary>
           ${others.map(t=>`<div class="trial">
-            <div class="t-spec">${grindIds(t).map(id=>`${esc(gName(id))} ${has((t.grind||{})[id])?esc(t.grind[id]):"—"}`).join(" · ")}${grindIds(t).length?" · ":""}${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
+            <div class="t-spec">${grindIds(t).map(id=>`${t.prefGrinder===id?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))} ${has((t.grind||{})[id])?esc(t.grind[id]):"—"}`).join(" · ")}${grindIds(t).length?" · ":""}${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
             ${tools(t,false)}
             ${has(t.notes)?`<p class="t-note">${esc(t.notes)}</p>`:""}
           </div>`).join("")}
@@ -709,14 +730,14 @@ details.more[open] summary{margin-bottom:12px}
     $("f-name").value=e.name||"";
     $("f-country").value=e.country?disp("country",e.country):"";
     $("f-roaster").value=e.roaster?disp("roaster",e.roaster):"";
-    renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
+    prefG=e.prefGrinder||""; renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
     $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
     $("more").open= has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
     renderChips();
   }
   function resetForm(){
-    editing=null; form.reset(); renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
+    editing=null; form.reset(); prefG=""; renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
     $("formTitle").textContent=T("formNew"); $("save").textContent=T("save"); msg.textContent="";
   }
   $("cancel").onclick=()=>{resetForm(); show("guide");};
@@ -760,6 +781,7 @@ details.more[open] summary{margin-bottom:12px}
     const old=editing?entries.find(x=>x.id===editing):null;
     const body={ name, country:canon("country",$("f-country").value), roaster:canon("roaster",$("f-roaster").value),
       grind:(()=>{ const keep={}; if(old&&old.grind){ const act=activeGrinders().map(x=>x.id); Object.entries(old.grind).forEach(([k,v])=>{ if(!act.includes(k)) keep[k]=v; }); } return {...keep,...readGrindInputs()}; })(),
+      prefGrinder: prefG && (activeGrinders().some(x=>x.id===prefG)) ? prefG : (old&&old.prefGrinder&&!activeGrinders().some(x=>x.id===old.prefGrinder) ? old.prefGrinder : ""),
       temp:num($("f-temp").value),
       drink:segVal($("f-drink")), dose:num($("f-dose").value), yield:num($("f-yield").value), time:num($("f-time").value),
       notes:$("f-notes").value.trim(), fav:false, createdAt: old?.createdAt||Date.now() };
@@ -848,7 +870,7 @@ details.more[open] summary{margin-bottom:12px}
     const origin=[e.country&&disp("country",e.country), e.roaster&&disp("roaster",e.roaster)].filter(Boolean).join(" · ");
     if(origin) lines.push(origin);
     lines.push(disp("drink",e.drink||"")+(e.fav?" · "+T("approvedTag"):""));
-    const grind=grindIds(e).filter(id=>has(g[id])).map(id=>gName(id)+" "+g[id]).join(" · ");
+    const grind=grindIds(e).filter(id=>has(g[id])).map(id=>gName(id)+" "+g[id]+(e.prefGrinder===id?" "+T("prefShare"):"")).join(" · ");
     if(grind) lines.push(T("fGrind")+": "+grind);
     const spec=[];
     if(has(e.temp)) spec.push(e.temp+"°C");
