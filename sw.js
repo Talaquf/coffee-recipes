@@ -1,7 +1,7 @@
 /* Offline support. The page itself is fetched network-first, so a new
    version on GitHub always wins when online; the cached copy is only a
    fallback for when there's no connection. */
-const CACHE = "coffee-recipes-v1.6.1";
+const CACHE = "coffee-recipes-v1.6.2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -23,7 +23,7 @@ self.addEventListener("fetch", e => {
   /* the page and the update check: network first, cache as fallback */
   if (req.mode === "navigate" || (url.origin === location.origin && /\/(index\.html)?$/.test(url.pathname))) {
     e.respondWith(
-      fetch(req, { cache: "no-store" }).then(res => {
+      fetch(req.url, { cache: "no-store", credentials: "same-origin" }).then(res => {
         if (res.ok && !url.searchParams.has("check")) {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put("./index.html", copy));

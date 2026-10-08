@@ -15,7 +15,8 @@ document.getElementById("themeColor").setAttribute("content",t==="light"?"#eef0e
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="دليل القهوة">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
 <title>دليل وصفات القهوة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,7 +74,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .filters{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 @media (max-width:520px){.filters{grid-template-columns:1fr}}
 .filters .seg button{font-size:.85rem;padding:6px 12px}
-.search{font:inherit;font-size:.92rem;text-overflow:ellipsis;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;min-width:0}
+.search{font:inherit;font-size:max(16px,.92rem);text-overflow:ellipsis;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;min-width:0}
 .guide{display:grid;gap:14px}
 .recipe{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .r-head{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
@@ -122,7 +123,7 @@ details.trials[open] summary::after{content:"－"}
 @media (max-width:460px){.grid{grid-template-columns:1fr}}
 label,.flabel{display:grid;gap:6px;font-size:.82rem;color:var(--muted);font-weight:500}
 .lbl-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--accent)}
-input,textarea{font:inherit;font-size:1rem;color:var(--fg);background:var(--sunk);border:1px solid transparent;border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+input,textarea{font:inherit;font-size:max(16px,1rem);color:var(--fg);background:var(--sunk);border:1px solid transparent;border-radius:8px;padding:10px 12px;width:100%;min-width:0}
 textarea{min-height:80px;resize:vertical;line-height:1.6}
 input:focus,textarea:focus{outline:none;border-color:var(--accent);background:var(--surface)}
 input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:var(--align)}
@@ -259,7 +260,7 @@ details.more[open] summary{margin-bottom:12px}
         <div class="boxed" id="grindBox"></div>
       </div>
       <label><span data-i18n="fTemp"></span>
-        <div class="unit"><input id="f-temp" class="num" type="number" step="0.5" min="80" max="100" value="93"><span>°C</span></div>
+        <div class="unit"><input id="f-temp" class="num" type="number" inputmode="decimal" step="0.5" min="80" max="100" value="93"><span>°C</span></div>
       </label>
       <div class="flabel"><span data-i18n="drink"></span>
         <div class="seg" role="group" id="f-drink" data-i18n-aria="drink">
@@ -271,9 +272,9 @@ details.more[open] summary{margin-bottom:12px}
         <summary data-i18n="more"></summary>
         <div style="display:grid;gap:14px">
           <div class="boxed">
-            <label><span data-i18n="fDose"></span><div class="unit"><input id="f-dose" class="num" type="number" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
-            <label><span data-i18n="fYield"></span><div class="unit"><input id="f-yield" class="num" type="number" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
-            <label><span data-i18n="fTime"></span><div class="unit"><input id="f-time" class="num" type="number" step="1" min="0" placeholder="28"><span>s</span></div></label>
+            <label><span data-i18n="fDose"></span><div class="unit"><input id="f-dose" class="num" type="number" inputmode="decimal" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
+            <label><span data-i18n="fYield"></span><div class="unit"><input id="f-yield" class="num" type="number" inputmode="decimal" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
+            <label><span data-i18n="fTime"></span><div class="unit"><input id="f-time" class="num" type="number" inputmode="numeric" step="1" min="0" placeholder="28"><span>s</span></div></label>
           </div>
           <label><span data-i18n="fNotes"></span>
             <textarea id="f-notes" data-i18n-ph="phNotes"></textarea>
@@ -323,7 +324,7 @@ details.more[open] summary{margin-bottom:12px}
     <div class="bk-btns">
       <button class="btn ghost" id="exportBtn" type="button" data-i18n="export"></button>
       <button class="btn ghost" id="importBtn" type="button" data-i18n="import"></button>
-      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <input type="file" id="importFile" accept=".json,application/json,text/plain" hidden>
     </div>
     <p class="msg" id="bkMsg" aria-live="polite"></p>
   </section>
@@ -354,7 +355,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.6.1";
+  const VERSION="1.6.2";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -392,7 +393,7 @@ details.more[open] summary{margin-bottom:12px}
       sHint:"تُحفظ التغييرات تلقائيًا. إزالة مطحنة تخفيها من النموذج فقط، وتبقى قيمها ظاهرة في الوصفات القديمة.",
       noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة",
       instT:"ثبّت الدليل على جهازك", instB:"يفتح من أيقونته مباشرةً بملء الشاشة، ويعمل دون اتصال بالإنترنت.",
-      instBtn:"تثبيت التطبيق", instManual:"من قائمة المتصفح ⋮ اختر «إضافة إلى الشاشة الرئيسية» أو «تثبيت التطبيق».", instHide:"إخفاء",
+      instBtn:"تثبيت التطبيق", instManual:"من قائمة المتصفح ⋮ اختر «إضافة إلى الشاشة الرئيسية» أو «تثبيت التطبيق».", instIOS:"في سفاري: اضغط زر المشاركة ⬆︎ ثم اختر «إضافة إلى الشاشة الرئيسية».", instHide:"إخفاء",
       aShare:"مشاركة", copied:"نُسخت الوصفة.", shareFail:"تعذّرت المشاركة.",
       remT:"حان وقت النسخة الاحتياطية", remB:"لديك تجارب جديدة لم تُحفظ في نسخة احتياطية منذ أكثر من أسبوعين.",
       remNow:"تصدير الآن", remLater:"لاحقًا", approvedTag:"وصفة معتمدة", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
@@ -430,7 +431,7 @@ details.more[open] summary{margin-bottom:12px}
       sHint:"Changes save automatically. Removing a grinder only hides it from the form; its settings stay visible on older recipes.",
       noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder",
       instT:"Install the guide on your device", instB:"It opens straight from its icon, full screen, and works offline.",
-      instBtn:"Install app", instManual:"Open the browser menu ⋮ and choose “Add to Home screen” or “Install app”.", instHide:"Hide",
+      instBtn:"Install app", instManual:"Open the browser menu ⋮ and choose “Add to Home screen” or “Install app”.", instIOS:"In Safari, tap the Share button ⬆︎, then choose “Add to Home Screen”.", instHide:"Hide",
       aShare:"Share", copied:"Recipe copied.", shareFail:"Couldn't share.",
       remT:"Time for a backup", remB:"You have new trials that haven't been backed up in over two weeks.",
       remNow:"Export now", remLater:"Later", approvedTag:"Approved recipe", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
@@ -477,7 +478,7 @@ details.more[open] summary{margin-bottom:12px}
     $("credit").innerHTML=esc(pre)+'<a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a>'+esc(post);
     $("formTitle").textContent= editing?T("formEdit"):T("formNew");
     $("save").textContent= editing?T("saveEdit"):T("save");
-    banner(); render(); renderChips(); renderGear();
+    banner(); render(); renderChips(); renderGear(); if(typeof paintInstall==="function") paintInstall();
     if(view==="settings") renderSettings();
     renderGrindInputs(readGrindInputs());
   }
@@ -775,11 +776,17 @@ details.more[open] summary{margin-bottom:12px}
   $("exportBtn").onclick=()=>{
     const data={app:"coffee-recipes",version:VERSION,exportedAt:new Date().toISOString(),settings,entries};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-    a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
+    const fname="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
+    const done=()=>{ $("bkMsg").textContent=T("exported"); meta.lastExport=Date.now(); saveMeta(); paintRemind(); };
+    if(isIOS && window.File && navigator.canShare){
+      try{
+        const file=new File([blob],fname,{type:"application/json"});
+        if(navigator.canShare({files:[file]})){ navigator.share({files:[file],title:fname}).then(done).catch(()=>{}); return; }
+      }catch(e){}
+    }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    $("bkMsg").textContent=T("exported");
-    meta.lastExport=Date.now(); saveMeta(); paintRemind();
+    done(); return;
   };
   $("importBtn").onclick=()=>$("importFile").click();
   $("importFile").onchange=async e=>{
@@ -813,12 +820,14 @@ details.more[open] summary{margin-bottom:12px}
 
   /* ---------- install ---------- */
   let deferredInstall=null;
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
   const isStandalone=()=> (window.matchMedia&&matchMedia("(display-mode: standalone)").matches) || navigator.standalone===true;
   function paintInstall(){
     const hide= isStandalone() || meta.installHidden || meta.installed;
     $("installCard").hidden=!!hide;
     $("instBtn").hidden=!deferredInstall;
     $("instManual").hidden=!!deferredInstall;
+    $("instManual").textContent= isIOS ? T("instIOS") : T("instManual");
   }
   window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredInstall=e; paintInstall(); });
   window.addEventListener("appinstalled",()=>{ deferredInstall=null; meta.installed=true; saveMeta(); paintInstall(); });
