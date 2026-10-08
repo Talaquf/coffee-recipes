@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .status.ok{color:var(--gold)}
 .status i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
 .dial{background:var(--sunk);margin-inline:12px;border-radius:8px;padding:12px 14px;display:grid;gap:10px}
-.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.readout{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr))}
 .readout>div{display:grid;gap:4px;align-content:start;padding-inline:10px;border-inline-start:1px solid var(--line);min-width:0}
 .readout>div:first-child{border-inline-start:0;padding-inline-start:0}
 .readout small{font-family:var(--mono);font-size:.64rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;direction:ltr;unicode-bidi:isolate;text-align:var(--align)}
@@ -149,7 +149,19 @@ details.more[open] summary{margin-bottom:12px}
 .foot .ver{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
 .foot a{font-weight:500;color:var(--fg);text-decoration:none;direction:ltr;unicode-bidi:isolate}
 .foot a:hover{text-decoration:underline}
-.top{display:flex;justify-content:flex-end}
+.top{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.icon-btn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;padding:0}
+.icon-btn:hover,.icon-btn[aria-pressed="true"]{color:var(--fg);border-color:var(--muted)}
+.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.icon-btn svg{width:18px;height:18px}
+.set-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.set-head .btn{padding:7px 16px}
+.g-list{display:grid;gap:8px}
+.g-row{display:flex;gap:8px;align-items:center}
+.g-row input{flex:1}
+.g-row .icon{flex:none}
+.set-sub{font-family:var(--display);font-weight:500;font-size:.95rem;color:var(--fg);margin:0}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
 .update{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:14px}
 .up-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .update .ver{font-size:.82rem;color:var(--muted)}
@@ -164,11 +176,14 @@ details.more[open] summary{margin-bottom:12px}
 <body>
 
 <div class="wrap">
-  <div class="top"><button class="lang" id="langBtn" type="button" lang="en">English</button></div>
+  <div class="top">
+    <button class="lang" id="langBtn" type="button" lang="en">English</button>
+    <button class="icon-btn" id="setBtn" type="button" aria-pressed="false" data-i18n-aria="setTitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
   <header>
     <div>
       <h1 data-i18n="title"></h1>
-      <p class="gear"><span>Slayer</span> · <span>Monolith</span> · <span>HG-1</span></p>
+      <p class="gear" id="gearLine"></p>
     </div>
     <div class="stats">
       <div><b id="s-rec">0</b><span data-i18n="statRec"></span></div>
@@ -209,10 +224,7 @@ details.more[open] summary{margin-bottom:12px}
         <div class="chips" id="c-roaster" role="group" data-i18n-aria="fRoaster"></div>
       </label>
       <div class="flabel full"><span data-i18n="fGrind"></span>
-        <div class="boxed">
-          <label><span class="lbl-tag">MONOLITH</span><input id="f-mono" class="num" inputmode="decimal" placeholder="—"></label>
-          <label><span class="lbl-tag">HG-1</span><input id="f-hg1" class="num" inputmode="decimal" placeholder="—"></label>
-        </div>
+        <div class="boxed" id="grindBox"></div>
       </div>
       <label><span data-i18n="fTemp"></span>
         <div class="unit"><input id="f-temp" class="num" type="number" step="0.5" min="80" max="100" value="93"><span>°C</span></div>
@@ -245,6 +257,17 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="msg" aria-live="polite"></p>
   </form>
 
+  <section class="panel" id="settings" hidden>
+    <div class="set-head"><h2 data-i18n="setTitle"></h2><button class="btn ghost" id="setDone" type="button" data-i18n="done"></button></div>
+    <p class="set-sub" data-i18n="sEquip"></p>
+    <label><span data-i18n="sMachine"></span><input id="s-machine" data-i18n-ph="phMachine"></label>
+    <div class="flabel"><span data-i18n="sGrinders"></span>
+      <div class="g-list" id="grinderList"></div>
+    </div>
+    <div><button class="btn ghost" id="addGrinder" type="button" data-i18n="addGrinder"></button></div>
+    <p class="hint" data-i18n="sHint"></p>
+  </section>
+
   <section class="backup" id="backup">
     <div>
       <strong data-i18n="bkTitle"></strong>
@@ -271,7 +294,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.3.0";
+  const VERSION="1.4.0";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -303,7 +326,11 @@ details.more[open] summary{margin-bottom:12px}
       badFile:"هذا الملف ليس نسخة احتياطية صالحة من الدليل.",
       storageOff:"يمنع المتصفح الحفظ هنا (التصفح الخفي أو حظر بيانات المواقع). صدّر نسخة احتياطية قبل إغلاق الصفحة.",
       credit:"من إعداد {h} على تيليجرام", langBtn:"English",
-      ver:"الإصدار {n}", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
+      ver:"الإصدار {n}",
+      setTitle:"الإعدادات", done:"تم", sEquip:"المعدات", sMachine:"مكينة الإسبريسو", phMachine:"مثال: Slayer Single Group",
+      sGrinders:"المطاحن", addGrinder:"إضافة مطحنة", phGrinder:"اسم المطحنة", gRemove:"إزالة", gConfirm:"تأكيد الإزالة",
+      sHint:"تُحفظ التغييرات تلقائيًا. إزالة مطحنة تخفيها من النموذج فقط، وتبقى قيمها ظاهرة في الوصفات القديمة.",
+      noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
     },
     en:{
       title:"Coffee Recipe Guide", statRec:"approved", statTri:"trials",
@@ -332,7 +359,11 @@ details.more[open] summary{margin-bottom:12px}
       badFile:"This file isn't a valid backup from the guide.",
       storageOff:"This browser is blocking storage here (private mode or blocked site data). Export a backup before you close the page.",
       credit:"Made by {h} on Telegram", langBtn:"العربية",
-      ver:"Version {n}", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
+      ver:"Version {n}",
+      setTitle:"Settings", done:"Done", sEquip:"Equipment", sMachine:"Espresso machine", phMachine:"e.g. Slayer Single Group",
+      sGrinders:"Grinders", addGrinder:"Add grinder", phGrinder:"Grinder name", gRemove:"Remove", gConfirm:"Confirm",
+      sHint:"Changes save automatically. Removing a grinder only hides it from the form; its settings stay visible on older recipes.",
+      noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
     }
   };
   /* stored values stay Arabic; these give their English labels */
@@ -358,7 +389,7 @@ details.more[open] summary{margin-bottom:12px}
 
   const form=$("form"), guide=$("guide"), msg=$("msg"), note=$("note");
   const KEY="coffee-recipes-v1";
-  const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"hg1":"10.2","monolith":"","name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
+  const SEED=[{"id":"xo2th3r7y7qdwf5kga5o","country":"برازيلي","createdAt":1791376873364,"dose":18,"drink":"فلات وايت","fav":true,"grind":{"hg1":"10.2"},"name":"موجيانا","notes":"","roaster":"انديز","temp":91.5,"time":25,"yield":27}];
   let entries=[], editing=null, filter="", query="", pendingDel=null, persistent=true, view="guide";
   const openGroups=new Set();
 
@@ -376,7 +407,9 @@ details.more[open] summary{margin-bottom:12px}
     $("credit").innerHTML=esc(pre)+'<a href="https://t.me/talaquf" target="_blank" rel="noopener">@talaquf</a>'+esc(post);
     $("formTitle").textContent= editing?T("formEdit"):T("formNew");
     $("save").textContent= editing?T("saveEdit"):T("save");
-    banner(); render(); renderChips();
+    banner(); render(); renderChips(); renderGear();
+    if(view==="settings") renderSettings();
+    renderGrindInputs(readGrindInputs());
   }
   $("langBtn").onclick=()=>{
     const c=canon("country",$("f-country").value), r=canon("roaster",$("f-roaster").value);
@@ -406,13 +439,84 @@ details.more[open] summary{margin-bottom:12px}
     $(i).addEventListener("input",renderChips);
   });
 
+  /* ---------- settings ---------- */
+  const SET_KEY="coffee-recipes-settings";
+  const DEFAULT_SET={machine:"Slayer Single Group",grinders:[{id:"monolith",name:"Monolith"},{id:"hg1",name:"HG-1"}]};
+  let settings=JSON.parse(JSON.stringify(DEFAULT_SET));
+  try{ const raw=localStorage.getItem(SET_KEY); if(raw){ const o=JSON.parse(raw); if(o&&Array.isArray(o.grinders)) settings={machine:o.machine||"",grinders:o.grinders}; } }catch(e){}
+  function saveSettings(){ try{ localStorage.setItem(SET_KEY,JSON.stringify(settings)); }catch(e){} }
+  const activeGrinders=()=>settings.grinders.filter(g=>!g.archived);
+  const gName=id=>{ const g=settings.grinders.find(x=>x.id===id); return (g&&g.name)||(g?T("grinder"):id); };
+  function migrate(e){
+    if(!e||typeof e!=="object") return e;
+    if(!e.grind||typeof e.grind!=="object"){
+      e.grind={};
+      if(has(e.monolith)) e.grind.monolith=String(e.monolith);
+      if(has(e.hg1)) e.grind.hg1=String(e.hg1);
+    }
+    delete e.monolith; delete e.hg1;
+    return e;
+  }
+  function renderGear(){
+    const parts=[settings.machine,...activeGrinders().map(g=>g.name)].map(norm).filter(Boolean);
+    $("gearLine").innerHTML=parts.map(x=>`<span>${esc(x)}</span>`).join(" · ");
+  }
+  function readGrindInputs(){
+    const o={}; $("grindBox").querySelectorAll("input[data-g]").forEach(i=>{ if(i.value.trim()) o[i.dataset.g]=i.value.trim(); }); return o;
+  }
+  function renderGrindInputs(values){
+    const gs=activeGrinders();
+    $("grindBox").innerHTML = gs.length
+      ? gs.map(g=>`<label><span class="lbl-tag">${esc((g.name||T("grinder")).toUpperCase())}</span><input class="num" inputmode="decimal" placeholder="—" data-g="${esc(g.id)}" value="${esc(values[g.id]??"")}"></label>`).join("")
+      : `<p class="hint">${T("noGrinders")}</p>`;
+  }
+  let pendingRemove=null;
+  function renderSettings(){
+    $("s-machine").value=settings.machine||"";
+    const gs=activeGrinders();
+    $("grinderList").innerHTML=gs.map(g=>`<div class="g-row">
+        <input data-gid="${esc(g.id)}" value="${esc(g.name)}" placeholder="${esc(T("phGrinder"))}" aria-label="${esc(T("phGrinder"))}">
+        <button class="icon ${pendingRemove===g.id?"confirm":""}" data-rm="${esc(g.id)}" type="button">${pendingRemove===g.id?T("gConfirm"):T("gRemove")}</button>
+      </div>`).join("");
+  }
+  $("s-machine").addEventListener("input",e=>{ settings.machine=e.target.value; saveSettings(); renderGear(); });
+  $("grinderList").addEventListener("input",e=>{
+    const id=e.target.dataset.gid; if(!id) return;
+    const g=settings.grinders.find(x=>x.id===id); if(!g) return;
+    g.name=e.target.value; saveSettings(); renderGear();
+  });
+  $("grinderList").addEventListener("click",e=>{
+    const b=e.target.closest("button[data-rm]"); if(!b) return;
+    const id=b.dataset.rm;
+    if(pendingRemove!==id){ pendingRemove=id; renderSettings(); setTimeout(()=>{ if(pendingRemove===id){ pendingRemove=null; renderSettings(); } },4000); return; }
+    pendingRemove=null;
+    const used=entries.some(x=>x.grind&&has(x.grind[id]));
+    if(used) settings.grinders.find(x=>x.id===id).archived=true;
+    else settings.grinders=settings.grinders.filter(x=>x.id!==id);
+    saveSettings(); renderSettings(); renderGear(); render();
+  });
+  $("addGrinder").onclick=()=>{
+    const id="g"+Date.now().toString(36);
+    settings.grinders.push({id,name:""}); saveSettings(); renderSettings();
+    const inp=$("grinderList").querySelector(`input[data-gid="${id}"]`); if(inp) inp.focus();
+  };
+  $("setBtn").onclick=()=>show(view==="settings"?"guide":"settings");
+  $("setDone").onclick=()=>{
+    settings.grinders=settings.grinders.filter(g=>g.archived||norm(g.name)); /* drop blank new rows */
+    saveSettings(); renderGear(); render(); show("guide");
+  };
+
   /* ---------- views ---------- */
   function show(tab){
-    view=tab; const g= tab==="guide";
+    if(view==="settings" && tab!=="settings"){ settings.grinders=settings.grinders.filter(g=>g.archived||norm(g.name)); saveSettings(); renderGear(); render(); }
+    if(tab==="new" && view==="settings") renderGrindInputs(readGrindInputs());
+    view=tab; const g= tab==="guide", n= tab==="new", st= tab==="settings";
     $("tab-guide").setAttribute("aria-selected",String(g));
-    $("tab-new").setAttribute("aria-selected",String(!g));
-    $("view-guide").hidden=!g; $("backup").hidden=!g; form.hidden=g;
-    if(!g){ renderChips(); $("f-name").focus({preventScroll:true}); }
+    $("tab-new").setAttribute("aria-selected",String(n));
+    $("setBtn").setAttribute("aria-pressed",String(st));
+    $("view-guide").hidden=!g; $("backup").hidden=!g; form.hidden=!n; $("settings").hidden=!st;
+    if(n){ renderChips(); $("f-name").focus({preventScroll:true}); }
+    if(st){ pendingRemove=null; renderSettings(); }
   }
   $("tab-guide").onclick=()=>show("guide");
   $("tab-new").onclick=()=>{ if(!editing) resetForm(); show("new"); };
@@ -431,6 +535,20 @@ details.more[open] summary{margin-bottom:12px}
     const m=String(x).trim().match(/^([\d.,٠-٩]+)\s*(.*)$/);
     return m ? `<b>${esc(m[1])}${m[2]?`<em>${esc(m[2])}</em>`:""}</b>` : `<b>${esc(x)}</b>`;
   };
+  function grindIds(e){
+    const g=e.grind||{};
+    const ids=activeGrinders().map(x=>x.id);
+    Object.keys(g).forEach(id=>{ if(has(g[id]) && !ids.includes(id)) ids.push(id); });
+    return ids;
+  }
+  function grindReadout(e){
+    const ids=grindIds(e), g=e.grind||{};
+    const cols=Math.min(ids.length+1,4);
+    return `<div class="readout" style="--cols:${cols}">
+      ${ids.map(id=>`<div><small>${esc(gName(id))}</small>${val(g[id])}</div>`).join("")}
+      <div><small>Temp °C</small>${val(e.temp)}</div>
+    </div>`;
+  }
   function ratioLine(e){
     if(!has(e.dose)&&!has(e.yield)&&!has(e.time)) return "";
     const r=(has(e.dose)&&has(e.yield)&&Number(e.dose)>0)?"1:"+(Number(e.yield)/Number(e.dose)).toFixed(1):"";
@@ -487,11 +605,7 @@ details.more[open] summary{margin-bottom:12px}
         </div>
         <div class="status ${g.approved?"ok":""}"><i></i>${g.approved?T("approved"):T("latest")}</div>
         <div class="dial">
-          <div class="readout">
-            <div><small>Monolith</small>${val(m.monolith)}</div>
-            <div><small>HG-1</small>${val(m.hg1)}</div>
-            <div><small>Temp °C</small>${val(m.temp)}</div>
-          </div>
+          ${grindReadout(m)}
           ${ratioLine(m)}
         </div>
         ${has(m.notes)?`<p class="notes">${esc(m.notes)}</p>`:""}
@@ -499,7 +613,7 @@ details.more[open] summary{margin-bottom:12px}
         ${others.length?`<details class="trials" data-k="${esc(g.k)}" ${openGroups.has(g.k)?"open":""}>
           <summary>${T("prev",others.length)}</summary>
           ${others.map(t=>`<div class="trial">
-            <div class="t-spec">M ${has(t.monolith)?esc(t.monolith):"—"} · HG ${has(t.hg1)?esc(t.hg1):"—"} · ${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
+            <div class="t-spec">${grindIds(t).map(id=>`${esc(gName(id))} ${has((t.grind||{})[id])?esc(t.grind[id]):"—"}`).join(" · ")}${grindIds(t).length?" · ":""}${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
             ${tools(t,false)}
             ${has(t.notes)?`<p class="t-note">${esc(t.notes)}</p>`:""}
           </div>`).join("")}
@@ -514,14 +628,14 @@ details.more[open] summary{margin-bottom:12px}
     $("f-name").value=e.name||"";
     $("f-country").value=e.country?disp("country",e.country):"";
     $("f-roaster").value=e.roaster?disp("roaster",e.roaster):"";
-    $("f-mono").value=e.monolith??""; $("f-hg1").value=e.hg1??""; $("f-temp").value=e.temp??93;
+    renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
     $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
     $("more").open= has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
     renderChips();
   }
   function resetForm(){
-    editing=null; form.reset(); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
+    editing=null; form.reset(); renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
     $("formTitle").textContent=T("formNew"); $("save").textContent=T("save"); msg.textContent="";
   }
   $("cancel").onclick=()=>{resetForm(); show("guide");};
@@ -563,7 +677,8 @@ details.more[open] summary{margin-bottom:12px}
     const num=x=>x===""?"":Number(x);
     const old=editing?entries.find(x=>x.id===editing):null;
     const body={ name, country:canon("country",$("f-country").value), roaster:canon("roaster",$("f-roaster").value),
-      monolith:$("f-mono").value.trim(), hg1:$("f-hg1").value.trim(), temp:num($("f-temp").value),
+      grind:(()=>{ const keep={}; if(old&&old.grind){ const act=activeGrinders().map(x=>x.id); Object.entries(old.grind).forEach(([k,v])=>{ if(!act.includes(k)) keep[k]=v; }); } return {...keep,...readGrindInputs()}; })(),
+      temp:num($("f-temp").value),
       drink:segVal($("f-drink")), dose:num($("f-dose").value), yield:num($("f-yield").value), time:num($("f-time").value),
       notes:$("f-notes").value.trim(), fav:false, createdAt: old?.createdAt||Date.now() };
     if(old) body.updatedAt=Date.now();
@@ -577,7 +692,7 @@ details.more[open] summary{margin-bottom:12px}
 
   /* ---------- backup ---------- */
   $("exportBtn").onclick=()=>{
-    const data={app:"coffee-recipes",version:VERSION,exportedAt:new Date().toISOString(),entries};
+    const data={app:"coffee-recipes",version:VERSION,exportedAt:new Date().toISOString(),settings,entries};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
     a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
@@ -590,8 +705,9 @@ details.more[open] summary{margin-bottom:12px}
     try{
       const d=JSON.parse(await f.text()); const list=Array.isArray(d)?d:d.entries;
       if(!Array.isArray(list)) throw 0;
-      let n=0; list.forEach(x=>{ if(x&&x.id&&x.name){ const i=entries.findIndex(y=>y.id===x.id); if(i>-1) entries[i]=x; else entries.push(x); n++; } });
-      entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render(); renderChips();
+      if(d&&d.settings&&Array.isArray(d.settings.grinders)){ settings={machine:d.settings.machine||"",grinders:d.settings.grinders}; saveSettings(); renderGear(); }
+      let n=0; list.forEach(x=>{ if(x&&x.id&&x.name){ migrate(x); const i=entries.findIndex(y=>y.id===x.id); if(i>-1) entries[i]=x; else entries.push(x); n++; } });
+      entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render(); renderChips(); renderGrindInputs(readGrindInputs());
       $("bkMsg").textContent=T("imported",n);
     }catch(err){ $("bkMsg").textContent=T("badFile"); }
     e.target.value="";
@@ -630,8 +746,8 @@ details.more[open] summary{margin-bottom:12px}
 
   /* ---------- start ---------- */
   const saved=load();
-  entries= saved ?? SEED;
-  if(saved===null && persistent) save();
+  entries= (saved ?? SEED).map(migrate);
+  if(persistent) save();
   resetForm();
   applyLang();
   if(location.protocol.startsWith("http")) checkUpdate(true);
