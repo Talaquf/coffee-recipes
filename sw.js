@@ -1,7 +1,7 @@
 /* Offline support. The page itself is fetched network-first, so a new
    version on GitHub always wins when online; the cached copy is only a
    fallback for when there's no connection. */
-const CACHE = "coffee-recipes-v1.7.0";
+const CACHE = "coffee-recipes-v1.7.1";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

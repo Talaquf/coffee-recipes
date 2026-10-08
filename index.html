@@ -30,7 +30,7 @@ document.getElementById("themeColor").setAttribute("content",t==="light"?"#eef0e
   --display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
   --body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:10px;
+  --r:10px; --col2:9.5rem;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141917; --surface:#1c2320; --sunk:#232b27; --line:#33403a;
@@ -56,13 +56,13 @@ h1{font-family:var(--display);font-weight:700;font-size:1.65rem;margin:0;line-he
 .gear{margin:6px 0 0;color:var(--muted);font-size:.85rem;font-family:var(--body);direction:ltr;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;row-gap:2px}
 .gear span{white-space:nowrap}
 .gear span+span::before{content:"·";margin-inline:7px;opacity:.7}
-.stats{display:flex;justify-content:center;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.stats>div{white-space:nowrap;padding-inline:22px;border-inline-start:1px solid var(--line);text-align:center}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,var(--col2)));justify-content:center;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats>div{white-space:nowrap;padding-inline:8px;border-inline-start:1px solid var(--line);text-align:center;min-width:0}
 .stats>div:first-child{border-inline-start:0}
 .stats b{display:block;color:var(--fg);font-family:var(--mono);font-size:1.3rem;font-weight:500;line-height:1.2}
 
-.tabs{display:flex;justify-content:center;gap:8px;border-bottom:1px solid var(--line)}
-.tabs button{font:inherit;font-family:var(--display);font-weight:500;background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,var(--col2)));justify-content:center;border-bottom:1px solid var(--line)}
+.tabs button{text-align:center;white-space:nowrap;font:inherit;font-family:var(--display);font-weight:500;background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
 
 .seg{display:flex;background:var(--sunk);border-radius:8px;padding:3px;gap:3px}
@@ -363,7 +363,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.7.0";
+  const VERSION="1.7.1";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -534,6 +534,8 @@ details.more[open] summary{margin-bottom:12px}
       if(has(e.hg1)) e.grind.hg1=String(e.hg1);
     }
     delete e.monolith; delete e.hg1;
+    if(!Array.isArray(e.prefGrinders)){ e.prefGrinders= e.prefGrinder?[e.prefGrinder]:[]; }
+    delete e.prefGrinder;
     return e;
   }
   function renderGear(){
@@ -543,11 +545,12 @@ details.more[open] summary{margin-bottom:12px}
   function readGrindInputs(){
     const o={}; $("grindBox").querySelectorAll("input[data-g]").forEach(i=>{ if(i.value.trim()) o[i.dataset.g]=i.value.trim(); }); return o;
   }
-  let prefG="";
+  let prefG=new Set();
+  const prefsOf=e=> Array.isArray(e.prefGrinders)?e.prefGrinders:(e.prefGrinder?[e.prefGrinder]:[]);
   function renderGrindInputs(values){
     const gs=activeGrinders();
     $("grindBox").innerHTML = gs.length
-      ? gs.map(g=>{ const nm=g.name||T("grinder"), on=prefG===g.id, fid="gi-"+g.id;
+      ? gs.map(g=>{ const nm=g.name||T("grinder"), on=prefG.has(g.id), fid="gi-"+g.id;
           return `<div class="g-field">
             <div class="g-head">
               <label class="lbl-tag" for="${esc(fid)}">${esc(nm.toUpperCase())}</label>
@@ -559,8 +562,8 @@ details.more[open] summary{margin-bottom:12px}
   }
   $("grindBox").addEventListener("click",e=>{
     const b=e.target.closest("button[data-pref]"); if(!b) return;
-    prefG = prefG===b.dataset.pref ? "" : b.dataset.pref;
-    $("grindBox").querySelectorAll("button[data-pref]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.pref===prefG)));
+    const id=b.dataset.pref; prefG.has(id)?prefG.delete(id):prefG.add(id);
+    b.setAttribute("aria-pressed",String(prefG.has(id)));
   });
   let pendingRemove=null;
   function renderSettings(){
@@ -646,7 +649,7 @@ details.more[open] summary{margin-bottom:12px}
     const ids=grindIds(e), g=e.grind||{};
     const cols=Math.min(ids.length+1,4);
     return `<div class="readout" style="--cols:${cols}">
-      ${ids.map(id=>`<div><small>${e.prefGrinder===id?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))}</small>${val(g[id])}</div>`).join("")}
+      ${ids.map(id=>`<div><small>${prefsOf(e).includes(id)?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))}</small>${val(g[id])}</div>`).join("")}
       <div><small>Temp °C</small>${val(e.temp)}</div>
     </div>`;
   }
@@ -715,7 +718,7 @@ details.more[open] summary{margin-bottom:12px}
         ${others.length?`<details class="trials" data-k="${esc(g.k)}" ${openGroups.has(g.k)?"open":""}>
           <summary>${T("prev",others.length)}</summary>
           ${others.map(t=>`<div class="trial">
-            <div class="t-spec">${grindIds(t).map(id=>`${t.prefGrinder===id?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))} ${has((t.grind||{})[id])?esc(t.grind[id]):"—"}`).join(" · ")}${grindIds(t).length?" · ":""}${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
+            <div class="t-spec">${grindIds(t).map(id=>`${prefsOf(t).includes(id)?`<i class="pdot" role="img" aria-label="${esc(T("prefLabel"))}"></i>`:""}${esc(gName(id))} ${has((t.grind||{})[id])?esc(t.grind[id]):"—"}`).join(" · ")}${grindIds(t).length?" · ":""}${has(t.temp)?esc(t.temp)+"°C":"—"}${has(t.dose)?` · ${esc(t.dose)}→${has(t.yield)?esc(t.yield):"—"}g`:""}${has(t.time)?` · ${esc(t.time)}s`:""} · <span style="color:var(--muted)">${fmtDate(t.createdAt)}</span></div>
             ${tools(t,false)}
             ${has(t.notes)?`<p class="t-note">${esc(t.notes)}</p>`:""}
           </div>`).join("")}
@@ -730,14 +733,14 @@ details.more[open] summary{margin-bottom:12px}
     $("f-name").value=e.name||"";
     $("f-country").value=e.country?disp("country",e.country):"";
     $("f-roaster").value=e.roaster?disp("roaster",e.roaster):"";
-    prefG=e.prefGrinder||""; renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
+    prefG=new Set(prefsOf(e)); renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
     $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
     $("more").open= has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
     renderChips();
   }
   function resetForm(){
-    editing=null; form.reset(); prefG=""; renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
+    editing=null; form.reset(); prefG=new Set(); renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
     $("formTitle").textContent=T("formNew"); $("save").textContent=T("save"); msg.textContent="";
   }
   $("cancel").onclick=()=>{resetForm(); show("guide");};
@@ -781,7 +784,7 @@ details.more[open] summary{margin-bottom:12px}
     const old=editing?entries.find(x=>x.id===editing):null;
     const body={ name, country:canon("country",$("f-country").value), roaster:canon("roaster",$("f-roaster").value),
       grind:(()=>{ const keep={}; if(old&&old.grind){ const act=activeGrinders().map(x=>x.id); Object.entries(old.grind).forEach(([k,v])=>{ if(!act.includes(k)) keep[k]=v; }); } return {...keep,...readGrindInputs()}; })(),
-      prefGrinder: prefG && (activeGrinders().some(x=>x.id===prefG)) ? prefG : (old&&old.prefGrinder&&!activeGrinders().some(x=>x.id===old.prefGrinder) ? old.prefGrinder : ""),
+      prefGrinders:(()=>{ const act=activeGrinders().map(x=>x.id); const kept=old?prefsOf(old).filter(id=>!act.includes(id)):[]; return [...kept,...act.filter(id=>prefG.has(id))]; })(),
       temp:num($("f-temp").value),
       drink:segVal($("f-drink")), dose:num($("f-dose").value), yield:num($("f-yield").value), time:num($("f-time").value),
       notes:$("f-notes").value.trim(), fav:false, createdAt: old?.createdAt||Date.now() };
@@ -870,7 +873,7 @@ details.more[open] summary{margin-bottom:12px}
     const origin=[e.country&&disp("country",e.country), e.roaster&&disp("roaster",e.roaster)].filter(Boolean).join(" · ");
     if(origin) lines.push(origin);
     lines.push(disp("drink",e.drink||"")+(e.fav?" · "+T("approvedTag"):""));
-    const grind=grindIds(e).filter(id=>has(g[id])).map(id=>gName(id)+" "+g[id]+(e.prefGrinder===id?" "+T("prefShare"):"")).join(" · ");
+    const grind=grindIds(e).filter(id=>has(g[id])).map(id=>gName(id)+" "+g[id]+(prefsOf(e).includes(id)?" "+T("prefShare"):"")).join(" · ");
     if(grind) lines.push(T("fGrind")+": "+grind);
     const spec=[];
     if(has(e.temp)) spec.push(e.temp+"°C");
