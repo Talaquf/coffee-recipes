@@ -6,7 +6,11 @@
 <meta name="theme-color" content="#141917" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#eef0ee" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="دليل القهوة">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>دليل وصفات القهوة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,6 +160,18 @@ details.more[open] summary{margin-bottom:12px}
 .icon-btn:hover,.icon-btn[aria-pressed="true"]{color:var(--fg);border-color:var(--muted)}
 .icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .icon-btn svg{width:18px;height:18px}
+.card-note{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px}
+.card-note strong{font-family:var(--display);font-weight:500}
+.card-note p{margin:2px 0 0;font-size:.86rem;color:var(--muted)}
+.card-note .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card-note .btn{padding:7px 14px;font-size:.88rem}
+.card-note.warn{border-color:var(--gold);background:var(--gold-soft)}
+.card-note.warn strong{color:var(--gold)}
+.note-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.x{font:inherit;line-height:1;background:transparent;border:0;color:var(--muted);font-size:1.1rem;padding:2px 6px;border-radius:6px;cursor:pointer;flex:none}
+.x:hover{color:var(--fg);background:var(--sunk)}
+.x:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:.88rem;box-shadow:0 4px 14px rgb(0 0 0 / .25);z-index:10;max-width:calc(100% - 32px)}
 .set-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .set-head .btn{padding:7px 16px}
 .g-list{display:grid;gap:8px}
@@ -199,6 +215,13 @@ details.more[open] summary{margin-bottom:12px}
   </nav>
 
   <section id="view-guide" style="display:grid;gap:14px">
+    <div class="card-note warn" id="remind" hidden>
+      <div><strong data-i18n="remT"></strong><p data-i18n="remB"></p></div>
+      <div class="row">
+        <button class="btn primary" id="remNow" type="button" data-i18n="remNow"></button>
+        <button class="btn ghost" id="remLater" type="button" data-i18n="remLater"></button>
+      </div>
+    </div>
     <div class="filters">
       <input class="search" id="q" type="search" data-i18n-ph="search">
       <div class="seg" role="group" id="filter" data-i18n-aria="drink">
@@ -283,6 +306,17 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="bkMsg" aria-live="polite"></p>
   </section>
 
+  <section class="card-note" id="installCard" hidden>
+    <div class="note-head">
+      <div><strong data-i18n="instT"></strong><p data-i18n="instB"></p></div>
+      <button class="x" id="instHide" type="button" data-i18n-aria="instHide">✕</button>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="instBtn" type="button" data-i18n="instBtn" hidden></button>
+      <p id="instManual" data-i18n="instManual" hidden></p>
+    </div>
+  </section>
+
   <section class="update" id="updateBar">
     <div class="up-row">
       <span class="ver" id="ver"></span>
@@ -291,12 +325,14 @@ details.more[open] summary{margin-bottom:12px}
     <p class="msg" id="updMsg" aria-live="polite"></p>
   </section>
 
+  <div class="toast" id="toast" role="status" hidden></div>
+
   <footer class="foot"><span class="credit" id="credit"></span></footer>
 </div>
 
 <script>
 (() => {
-  const VERSION="1.4.1";
+  const VERSION="1.5.0";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -332,7 +368,12 @@ details.more[open] summary{margin-bottom:12px}
       setTitle:"الإعدادات", done:"تم", sEquip:"المعدات", sMachine:"مكينة الإسبريسو", phMachine:"مثال: Slayer Single Group",
       sGrinders:"المطاحن", addGrinder:"إضافة مطحنة", phGrinder:"اسم المطحنة", gRemove:"إزالة", gConfirm:"تأكيد الإزالة",
       sHint:"تُحفظ التغييرات تلقائيًا. إزالة مطحنة تخفيها من النموذج فقط، وتبقى قيمها ظاهرة في الوصفات القديمة.",
-      noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
+      noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة",
+      instT:"ثبّت الدليل على جهازك", instB:"يفتح من أيقونته مباشرةً بملء الشاشة، ويعمل دون اتصال بالإنترنت.",
+      instBtn:"تثبيت التطبيق", instManual:"من قائمة المتصفح ⋮ اختر «إضافة إلى الشاشة الرئيسية» أو «تثبيت التطبيق».", instHide:"إخفاء",
+      aShare:"مشاركة", copied:"نُسخت الوصفة.", shareFail:"تعذّرت المشاركة.",
+      remT:"حان وقت النسخة الاحتياطية", remB:"لديك تجارب جديدة لم تُحفظ في نسخة احتياطية منذ أكثر من أسبوعين.",
+      remNow:"تصدير الآن", remLater:"لاحقًا", approvedTag:"وصفة معتمدة", upCheck:"التحقق من التحديثات", upChecking:"جارٍ التحقق…", upGo:"التحديث إلى الإصدار {n}", upLatest:"أنت تستخدم أحدث إصدار.", upNew:"يتوفر إصدار جديد. بياناتك محفوظة ولن تتأثر بالتحديث.", upFail:"تعذّر التحقق. تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى.", upDone:"تم التحديث إلى الإصدار {n}."
     },
     en:{
       title:"Coffee Recipe Guide", statRec:"approved", statTri:"trials",
@@ -365,7 +406,12 @@ details.more[open] summary{margin-bottom:12px}
       setTitle:"Settings", done:"Done", sEquip:"Equipment", sMachine:"Espresso machine", phMachine:"e.g. Slayer Single Group",
       sGrinders:"Grinders", addGrinder:"Add grinder", phGrinder:"Grinder name", gRemove:"Remove", gConfirm:"Confirm",
       sHint:"Changes save automatically. Removing a grinder only hides it from the form; its settings stay visible on older recipes.",
-      noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
+      noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder",
+      instT:"Install the guide on your device", instB:"It opens straight from its icon, full screen, and works offline.",
+      instBtn:"Install app", instManual:"Open the browser menu ⋮ and choose “Add to Home screen” or “Install app”.", instHide:"Hide",
+      aShare:"Share", copied:"Recipe copied.", shareFail:"Couldn't share.",
+      remT:"Time for a backup", remB:"You have new trials that haven't been backed up in over two weeks.",
+      remNow:"Export now", remLater:"Later", approvedTag:"Approved recipe", upCheck:"Check for updates", upChecking:"Checking…", upGo:"Update to version {n}", upLatest:"You're on the latest version.", upNew:"A new version is available. Your data stays saved and isn't affected by the update.", upFail:"Couldn't check. Make sure you're online, then try again.", upDone:"Updated to version {n}."
     }
   };
   /* stored values stay Arabic; these give their English labels */
@@ -565,6 +611,7 @@ details.more[open] summary{margin-bottom:12px}
     const del=pendingDel===e.id;
     return `<div class="tools">
       ${e.fav?"":`<button class="icon star" data-act="fav" data-id="${esc(e.id)}" type="button">${T("aFav")}</button>`}
+      ${isMain?`<button class="icon" data-act="share" data-id="${esc(e.id)}" type="button">${T("aShare")}</button>`:""}
       <button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?T("aTry"):T("aDup")}</button>
       <button class="icon" data-act="edit" data-id="${esc(e.id)}" type="button">${T("aEdit")}</button>
       <button class="icon ${del?"confirm":""}" data-act="del" data-id="${esc(e.id)}" type="button">${del?T("aConfirm"):T("aDel")}</button>
@@ -649,7 +696,7 @@ details.more[open] summary{margin-bottom:12px}
   function write(id,body){
     const i=entries.findIndex(x=>x.id===id);
     if(i>-1) entries[i]={id,...body}; else entries.unshift({id,...body});
-    entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); render();
+    entries.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); save(); touch(); render();
   }
   const strip=e=>{const {id,...rest}=e; return rest;};
   function makeFav(id){
@@ -664,11 +711,12 @@ details.more[open] summary{margin-bottom:12px}
     const id=b.dataset.id, e=entries.find(x=>x.id===id); if(!e) return;
     const act=b.dataset.act;
     if(act==="fav") makeFav(id);
+    if(act==="share") shareRecipe(e);
     if(act==="edit"){ resetForm(); editing=id; fill(e); $("f-fav").checked=!!e.fav; $("formTitle").textContent=T("formEdit"); $("save").textContent=T("saveEdit"); show("new"); }
     if(act==="dup"){ resetForm(); fill(e); $("f-notes").value=""; msg.className="msg"; msg.textContent=T("dupMsg"); show("new"); }
     if(act==="del"){
       if(pendingDel!==id){ pendingDel=id; render(); setTimeout(()=>{ if(pendingDel===id){pendingDel=null; render();} },4000); return; }
-      pendingDel=null; entries=entries.filter(x=>x.id!==id); save(); render();
+      pendingDel=null; entries=entries.filter(x=>x.id!==id); save(); touch(); render();
     }
   });
 
@@ -700,6 +748,7 @@ details.more[open] summary{margin-bottom:12px}
     a.download="coffee-recipes-"+new Date().toISOString().slice(0,10)+".json";
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
     $("bkMsg").textContent=T("exported");
+    meta.lastExport=Date.now(); saveMeta(); paintRemind();
   };
   $("importBtn").onclick=()=>$("importFile").click();
   $("importFile").onchange=async e=>{
@@ -714,6 +763,70 @@ details.more[open] summary{margin-bottom:12px}
     }catch(err){ $("bkMsg").textContent=T("badFile"); }
     e.target.value="";
   };
+
+  /* ---------- meta: backup reminder ---------- */
+  const META_KEY="coffee-recipes-meta", DAY=864e5;
+  let meta={};
+  try{ meta=JSON.parse(localStorage.getItem(META_KEY)||"{}")||{}; }catch(e){ meta={}; }
+  if(!meta.firstUse){ meta.firstUse=Date.now(); }
+  function saveMeta(){ try{ localStorage.setItem(META_KEY,JSON.stringify(meta)); }catch(e){} }
+  saveMeta();
+  function touch(){ meta.lastChange=Date.now(); saveMeta(); paintRemind(); }
+  function paintRemind(){
+    const now=Date.now(), since=meta.lastExport||meta.firstUse;
+    const due= entries.length>0 && (meta.lastChange||0)>(meta.lastExport||0) && now-since>14*DAY && now>(meta.snoozeUntil||0);
+    $("remind").hidden=!due;
+  }
+  $("remNow").onclick=()=>$("exportBtn").click();
+  $("remLater").onclick=()=>{ meta.snoozeUntil=Date.now()+3*DAY; saveMeta(); paintRemind(); };
+
+  /* ---------- install ---------- */
+  let deferredInstall=null;
+  const isStandalone=()=> (window.matchMedia&&matchMedia("(display-mode: standalone)").matches) || navigator.standalone===true;
+  function paintInstall(){
+    const hide= isStandalone() || meta.installHidden || meta.installed;
+    $("installCard").hidden=!!hide;
+    $("instBtn").hidden=!deferredInstall;
+    $("instManual").hidden=!!deferredInstall;
+  }
+  window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredInstall=e; paintInstall(); });
+  window.addEventListener("appinstalled",()=>{ deferredInstall=null; meta.installed=true; saveMeta(); paintInstall(); });
+  $("instBtn").onclick=async()=>{
+    if(!deferredInstall) return;
+    deferredInstall.prompt();
+    try{ await deferredInstall.userChoice; }catch(e){}
+    deferredInstall=null; paintInstall();
+  };
+  $("instHide").onclick=()=>{ meta.installHidden=true; saveMeta(); paintInstall(); };
+
+  /* ---------- share ---------- */
+  let toastTimer=null;
+  function toast(t){ const el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true,2200); }
+  function recipeText(e){
+    const g=e.grind||{};
+    const lines=["☕ "+(e.name||T("unnamed"))];
+    const origin=[e.country&&disp("country",e.country), e.roaster&&disp("roaster",e.roaster)].filter(Boolean).join(" · ");
+    if(origin) lines.push(origin);
+    lines.push(disp("drink",e.drink||"")+(e.fav?" · "+T("approvedTag"):""));
+    const grind=grindIds(e).filter(id=>has(g[id])).map(id=>gName(id)+" "+g[id]).join(" · ");
+    if(grind) lines.push(T("fGrind")+": "+grind);
+    const spec=[];
+    if(has(e.temp)) spec.push(e.temp+"°C");
+    if(has(e.dose)||has(e.yield)) spec.push((has(e.dose)?e.dose:"—")+"g → "+(has(e.yield)?e.yield:"—")+"g"+(has(e.dose)&&has(e.yield)&&Number(e.dose)>0?" (1:"+(e.yield/e.dose).toFixed(1)+")":""));
+    if(has(e.time)) spec.push(e.time+"s");
+    if(spec.length) lines.push(spec.join(" · "));
+    if(has(e.notes)) lines.push("", e.notes);
+    return lines.join("\n");
+  }
+  async function shareRecipe(e){
+    const text=recipeText(e);
+    if(navigator.share){
+      try{ await navigator.share({title:e.name||T("title"),text}); return; }
+      catch(err){ if(err&&err.name==="AbortError") return; }
+    }
+    try{ await navigator.clipboard.writeText(text); toast(T("copied")); }
+    catch(err){ toast(T("shareFail")); }
+  }
 
   /* ---------- updates ---------- */
   let latest=null, updState="idle"; /* idle | checking | latest | new | fail */
@@ -752,7 +865,11 @@ details.more[open] summary{margin-bottom:12px}
   if(persistent) save();
   resetForm();
   applyLang();
+  paintRemind(); paintInstall();
   if(location.protocol.startsWith("http")) checkUpdate(true);
+  if("serviceWorker" in navigator && location.protocol==="https:"){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  }
 })();
 </script>
 </body>
