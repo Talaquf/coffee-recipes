@@ -59,6 +59,7 @@ h1{font-family:var(--display);font-weight:700;font-size:1.65rem;margin:0;line-he
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,var(--col2)));justify-content:center;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .stats>div{white-space:nowrap;padding-inline:8px;border-inline-start:1px solid var(--line);text-align:center;min-width:0}
 .stats>div:first-child{border-inline-start:0}
+.stats.one>div{grid-column:1/-1}
 .stats b{display:block;color:var(--fg);font-family:var(--mono);font-size:1.3rem;font-weight:500;line-height:1.2}
 
 .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,var(--col2)));justify-content:center;border-bottom:1px solid var(--line)}
@@ -129,8 +130,9 @@ input:focus,textarea:focus{outline:none;border-color:var(--accent);background:va
 input.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:var(--align)}
 .boxed{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:var(--sunk);border-radius:8px;padding:10px}
 .boxed input{background:var(--surface)}
-.g-field{display:grid;gap:6px;min-width:0}
-.g-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.g-field{display:grid;grid-template-rows:auto auto auto;gap:8px;min-width:0;align-content:start}
+.g-field .lbl-tag{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-field .pref{justify-self:start}
 .pref{font:inherit;font-size:.75rem;font-weight:500;display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted);cursor:pointer;white-space:nowrap}
 .pref::before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;box-sizing:border-box}
 .pref[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
@@ -221,7 +223,7 @@ details.more[open] summary{margin-bottom:12px}
     </div>
     <div class="stats">
       <div><b id="s-rec">0</b><span data-i18n="statRec"></span></div>
-      <div><b id="s-tri">0</b><span data-i18n="statTri"></span></div>
+      <div id="statTri"><b id="s-tri">0</b><span data-i18n="statTri"></span></div>
     </div>
   </header>
 
@@ -367,7 +369,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.8.0";
+  const VERSION="1.8.1";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -556,11 +558,9 @@ details.more[open] summary{margin-bottom:12px}
     $("grindBox").innerHTML = gs.length
       ? gs.map(g=>{ const nm=g.name||T("grinder"), on=prefG.has(g.id), fid="gi-"+g.id;
           return `<div class="g-field">
-            <div class="g-head">
-              <label class="lbl-tag" for="${esc(fid)}">${esc(nm.toUpperCase())}</label>
-              <button type="button" class="pref" data-pref="${esc(g.id)}" aria-pressed="${on}" aria-label="${esc(T("prefLabel")+": "+nm)}">${T("prefBtn")}</button>
-            </div>
+            <label class="lbl-tag" for="${esc(fid)}">${esc(nm.toUpperCase())}</label>
             <input id="${esc(fid)}" class="num" inputmode="decimal" placeholder="—" data-g="${esc(g.id)}" value="${esc(values[g.id]??"")}">
+            <button type="button" class="pref" data-pref="${esc(g.id)}" aria-pressed="${on}" aria-label="${esc(T("prefLabel")+": "+nm)}">${T("prefBtn")}</button>
           </div>`; }).join("")
       : `<p class="hint">${T("noGrinders")}</p>`;
   }
@@ -585,9 +585,11 @@ details.more[open] summary{margin-bottom:12px}
     $("themeColor").setAttribute("content",t==="light"?"#eef0ee":"#141917");
     setSeg($("s-theme"),t); setSeg($("s-font"),String(settings.fontScale||1));
     $("s-try").checked=!!settings.showTry;
+    $("statTri").hidden=!settings.showTry;
+    document.querySelector(".stats").classList.toggle("one",!settings.showTry);
   }
   $("s-theme").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; settings.theme=b.dataset.v; saveSettings(); applyLook(); };
-  $("s-try").onchange=e=>{ settings.showTry=e.target.checked; saveSettings(); render(); };
+  $("s-try").onchange=e=>{ settings.showTry=e.target.checked; saveSettings(); applyLook(); render(); };
   $("s-font").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; settings.fontScale=Number(b.dataset.v); saveSettings(); applyLook(); };
   $("s-machine").addEventListener("input",e=>{ settings.machine=e.target.value; saveSettings(); renderGear(); });
   $("grinderList").addEventListener("input",e=>{
