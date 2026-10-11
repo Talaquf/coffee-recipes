@@ -281,6 +281,7 @@ details.more[open] summary{margin-bottom:12px}
         <div style="display:grid;gap:14px">
           <div class="boxed">
             <label><span data-i18n="fDose"></span><div class="unit"><input id="f-dose" class="num" type="number" inputmode="decimal" step="0.1" min="0" placeholder="18"><span>g</span></div></label>
+            <label><span data-i18n="fRatio"></span><div class="unit"><input id="f-ratio" class="num" type="number" inputmode="decimal" step="0.1" min="0" placeholder="2"><span>1:</span></div></label>
             <label><span data-i18n="fYield"></span><div class="unit"><input id="f-yield" class="num" type="number" inputmode="decimal" step="0.1" min="0" placeholder="36"><span>g</span></div></label>
             <label><span data-i18n="fTime"></span><div class="unit"><input id="f-time" class="num" type="number" inputmode="numeric" step="1" min="0" placeholder="28"><span>s</span></div></label>
           </div>
@@ -366,7 +367,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.7.2";
+  const VERSION="1.8.0";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -385,7 +386,7 @@ details.more[open] summary{margin-bottom:12px}
       fName:"اسم المحصول", phName:"مثال: سيدامو بنسالي",
       fCountry:"بلد المنشأ", fRoaster:"المحمصة", phPick:"اختر مما يلي أو اكتب",
       fGrind:"درجة الطحن", fTemp:"درجة الحرارة",
-      more:"تفاصيل إضافية (اختيارية)", fDose:"الجرعة", fYield:"الناتج", fTime:"الوقت",
+      more:"تفاصيل إضافية (اختيارية)", fDose:"الجرعة", fRatio:"النسبة", fYield:"الناتج", fTime:"الوقت",
       fNotes:"ملاحظات التذوق", phNotes:"مثال: حلاوة واضحة، وحموضة خفيفة، وطغى الحليب على النكهة قليلًا…",
       fFav:"اعتمادها وصفةً لهذا المحصول",
       save:"حفظ التجربة", saveEdit:"حفظ التعديل", cancel:"إلغاء",
@@ -423,7 +424,7 @@ details.more[open] summary{margin-bottom:12px}
       fName:"Bean name", phName:"e.g. Sidamo Bensa",
       fCountry:"Origin", fRoaster:"Roaster", phPick:"Pick below or type",
       fGrind:"Grind setting", fTemp:"Temperature",
-      more:"More details (optional)", fDose:"Dose", fYield:"Yield", fTime:"Time",
+      more:"More details (optional)", fDose:"Dose", fRatio:"Ratio", fYield:"Yield", fTime:"Time",
       fNotes:"Tasting notes", phNotes:"e.g. clear sweetness, light acidity, milk muted the flavor a little…",
       fFav:"Approve as the recipe for this bean",
       save:"Save trial", saveEdit:"Save changes", cancel:"Cancel",
@@ -739,7 +740,7 @@ details.more[open] summary{margin-bottom:12px}
     $("f-country").value=e.country?disp("country",e.country):"";
     $("f-roaster").value=e.roaster?disp("roaster",e.roaster):"";
     prefG=new Set(prefsOf(e)); renderGrindInputs(e.grind||{}); $("f-temp").value=e.temp??93;
-    $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
+    $("f-dose").value=e.dose??""; $("f-yield").value=e.yield??""; syncRatio(); $("f-time").value=e.time??""; $("f-notes").value=e.notes||"";
     $("more").open= has(e.dose)||has(e.yield)||has(e.time)||has(e.notes);
     setSeg($("f-drink"),e.drink||"فلات وايت");
     renderChips();
@@ -748,6 +749,19 @@ details.more[open] summary{margin-bottom:12px}
     editing=null; form.reset(); prefG=new Set(); renderGrindInputs({}); $("f-temp").value=93; setSeg($("f-drink"),"فلات وايت"); $("more").open=false;
     $("formTitle").textContent=T("formNew"); $("save").textContent=T("save"); msg.textContent="";
   }
+  /* ratio <-> yield: dose × ratio fills the yield; editing the yield updates the ratio */
+  const round1=n=>Math.round(n*10)/10;
+  function syncRatio(){
+    const d=parseFloat($("f-dose").value), y=parseFloat($("f-yield").value);
+    $("f-ratio").value = (d>0 && y>0) ? String(round1(y/d)) : "";
+  }
+  function fillYield(){
+    const d=parseFloat($("f-dose").value), rt=parseFloat($("f-ratio").value);
+    if(d>0 && rt>0) $("f-yield").value=String(round1(d*rt));
+  }
+  $("f-dose").addEventListener("input",()=>{ if($("f-ratio").value) fillYield(); else syncRatio(); });
+  $("f-ratio").addEventListener("input",fillYield);
+  $("f-yield").addEventListener("input",syncRatio);
   $("cancel").onclick=()=>{resetForm(); show("guide");};
 
   /* ---------- storage ---------- */
