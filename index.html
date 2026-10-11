@@ -315,6 +315,9 @@ details.more[open] summary{margin-bottom:12px}
         <button type="button" data-v="1.25" aria-pressed="false" data-i18n="fXL"></button>
       </div>
     </div>
+    <div class="set-sec"><p class="set-sub" data-i18n="sCard"></p>
+      <label class="check"><input type="checkbox" id="s-try"> <span data-i18n="sTry"></span></label>
+    </div>
     <div class="set-sec"><p class="set-sub" data-i18n="sEquip"></p></div>
     <label><span data-i18n="sMachine"></span><input id="s-machine" data-i18n-ph="phMachine"></label>
     <div class="flabel"><span data-i18n="sGrinders"></span>
@@ -363,7 +366,7 @@ details.more[open] summary{margin-bottom:12px}
 
 <script>
 (() => {
-  const VERSION="1.7.1";
+  const VERSION="1.7.2";
   const $ = id => document.getElementById(id);
 
   /* ---------- language ---------- */
@@ -396,7 +399,7 @@ details.more[open] summary{margin-bottom:12px}
       storageOff:"يمنع المتصفح الحفظ هنا (التصفح الخفي أو حظر بيانات المواقع). صدّر نسخة احتياطية قبل إغلاق الصفحة.",
       credit:"من إعداد {h} على تيليجرام", langBtn:"English",
       ver:"الإصدار {n}",
-      setTitle:"الإعدادات", done:"تم", sLook:"المظهر", sTheme:"الوضع", tDark:"ليلي", tLight:"نهاري", sFont:"حجم الخط", fS:"صغير", fM:"افتراضي", fL:"كبير", fXL:"أكبر", sEquip:"المعدات", sMachine:"مكينة الإسبريسو", phMachine:"مثال: Slayer Single Group",
+      setTitle:"الإعدادات", done:"تم", sCard:"بطاقة الوصفة", sTry:"إظهار زر «تجربة عليها»", sLook:"المظهر", sTheme:"الوضع", tDark:"ليلي", tLight:"نهاري", sFont:"حجم الخط", fS:"صغير", fM:"افتراضي", fL:"كبير", fXL:"أكبر", sEquip:"المعدات", sMachine:"مكينة الإسبريسو", phMachine:"مثال: Slayer Single Group",
       sGrinders:"المطاحن", addGrinder:"إضافة مطحنة", phGrinder:"اسم المطحنة", gRemove:"إزالة", gConfirm:"تأكيد الإزالة",
       sHint:"تُحفظ التغييرات تلقائيًا. إزالة مطحنة تخفيها من النموذج فقط، وتبقى قيمها ظاهرة في الوصفات القديمة.",
       noGrinders:"لا توجد مطاحن. أضف مطحنة من الإعدادات.", grinder:"مطحنة", prefBtn:"المفضلة", prefLabel:"المطحنة المفضلة لهذه الوصفة", prefShare:"(المفضلة)",
@@ -434,7 +437,7 @@ details.more[open] summary{margin-bottom:12px}
       storageOff:"This browser is blocking storage here (private mode or blocked site data). Export a backup before you close the page.",
       credit:"Made by {h} on Telegram", langBtn:"العربية",
       ver:"Version {n}",
-      setTitle:"Settings", done:"Done", sLook:"Appearance", sTheme:"Theme", tDark:"Dark", tLight:"Light", sFont:"Text size", fS:"Small", fM:"Default", fL:"Large", fXL:"Larger", sEquip:"Equipment", sMachine:"Espresso machine", phMachine:"e.g. Slayer Single Group",
+      setTitle:"Settings", done:"Done", sCard:"Recipe card", sTry:"Show the “Try a variation” button", sLook:"Appearance", sTheme:"Theme", tDark:"Dark", tLight:"Light", sFont:"Text size", fS:"Small", fM:"Default", fL:"Large", fXL:"Larger", sEquip:"Equipment", sMachine:"Espresso machine", phMachine:"e.g. Slayer Single Group",
       sGrinders:"Grinders", addGrinder:"Add grinder", phGrinder:"Grinder name", gRemove:"Remove", gConfirm:"Confirm",
       sHint:"Changes save automatically. Removing a grinder only hides it from the form; its settings stay visible on older recipes.",
       noGrinders:"No grinders yet. Add one in Settings.", grinder:"Grinder", prefBtn:"Preferred", prefLabel:"Preferred grinder for this recipe", prefShare:"(preferred)",
@@ -520,7 +523,7 @@ details.more[open] summary{margin-bottom:12px}
 
   /* ---------- settings ---------- */
   const SET_KEY="coffee-recipes-settings";
-  const DEFAULT_SET={machine:"Slayer Single Group",grinders:[{id:"monolith",name:"Monolith"},{id:"hg1",name:"HG-1"}],theme:"dark",fontScale:1};
+  const DEFAULT_SET={machine:"Slayer Single Group",grinders:[{id:"monolith",name:"Monolith"},{id:"hg1",name:"HG-1"}],theme:"dark",fontScale:1,showTry:false};
   let settings=JSON.parse(JSON.stringify(DEFAULT_SET));
   try{ const raw=localStorage.getItem(SET_KEY); if(raw){ const o=JSON.parse(raw); if(o&&Array.isArray(o.grinders)) settings={...DEFAULT_SET,...o,machine:o.machine||""}; } }catch(e){}
   function saveSettings(){ try{ localStorage.setItem(SET_KEY,JSON.stringify(settings)); }catch(e){} }
@@ -580,8 +583,10 @@ details.more[open] summary{margin-bottom:12px}
     root.style.setProperty("--fs",settings.fontScale||1);
     $("themeColor").setAttribute("content",t==="light"?"#eef0ee":"#141917");
     setSeg($("s-theme"),t); setSeg($("s-font"),String(settings.fontScale||1));
+    $("s-try").checked=!!settings.showTry;
   }
   $("s-theme").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; settings.theme=b.dataset.v; saveSettings(); applyLook(); };
+  $("s-try").onchange=e=>{ settings.showTry=e.target.checked; saveSettings(); render(); };
   $("s-font").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; settings.fontScale=Number(b.dataset.v); saveSettings(); applyLook(); };
   $("s-machine").addEventListener("input",e=>{ settings.machine=e.target.value; saveSettings(); renderGear(); });
   $("grinderList").addEventListener("input",e=>{
@@ -668,7 +673,7 @@ details.more[open] summary{margin-bottom:12px}
     return `<div class="tools">
       ${e.fav?"":`<button class="icon star" data-act="fav" data-id="${esc(e.id)}" type="button">${T("aFav")}</button>`}
       ${isMain?`<button class="icon" data-act="share" data-id="${esc(e.id)}" type="button">${T("aShare")}</button>`:""}
-      <button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?T("aTry"):T("aDup")}</button>
+      ${settings.showTry?`<button class="icon" data-act="dup" data-id="${esc(e.id)}" type="button">${isMain?T("aTry"):T("aDup")}</button>`:""}
       <button class="icon" data-act="edit" data-id="${esc(e.id)}" type="button">${T("aEdit")}</button>
       <button class="icon ${del?"confirm":""}" data-act="del" data-id="${esc(e.id)}" type="button">${del?T("aConfirm"):T("aDel")}</button>
     </div>`;
